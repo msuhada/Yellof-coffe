@@ -1,26 +1,93 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --bg-dark: #0A0807;
+    --bg-card: #14100E;
+    --bg-card-hover: #1E1815;
+    --gold-primary: #E6B800;
+    --gold-light: #FFDF6D;
+    --gold-dark: #B8860B;
+    --text-cream: #F5EFE6;
+    --text-muted: #A39688;
+  }
+
+  body {
+    background-color: var(--bg-dark);
+    color: var(--text-cream);
+    font-family: var(--font-jakarta), system-ui, -apple-system, sans-serif;
+    overflow-x: hidden;
+    scroll-behavior: smooth;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Custom Utilities & Glow Effects */
+.bg-coffee-gradient {
+  background: radial-gradient(circle at 50% 20%, rgba(218, 165, 32, 0.15) 0%, rgba(13, 10, 8, 0.98) 70%);
+}
+
+.bg-gold-gradient {
+  background: linear-gradient(135deg, #FFDF6D 0%, #D4AF37 50%, #996515 100%);
+}
+
+.text-gold-gradient {
+  background: linear-gradient(135deg, #FFF0B8 0%, #E6B800 50%, #B8860B 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.gold-border-glow {
+  border: 1px solid rgba(218, 165, 32, 0.3);
+  box-shadow: 0 0 15px rgba(218, 165, 32, 0.08);
+  transition: all 0.3s ease;
+}
+
+.gold-border-glow:hover {
+  border-color: rgba(218, 165, 32, 0.7);
+  box-shadow: 0 0 25px rgba(218, 165, 32, 0.25);
+}
+
+.glass-coffee-card {
+  background: rgba(22, 17, 14, 0.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(230, 184, 0, 0.2);
+}
+
+/* Steam Animation */
+@keyframes steamRise {
+  0% {
+    transform: translateY(0) scaleX(1);
+    opacity: 0;
+  }
+  30% {
+    opacity: 0.6;
+  }
+  60% {
+    transform: translateY(-25px) scaleX(1.3);
+    opacity: 0.3;
+  }
+  100% {
+    transform: translateY(-50px) scaleX(1.6);
+    opacity: 0;
+  }
+}
+
+.animate-steam {
+  animation: steamRise 3.5s ease-out infinite;
+}
+
+/* Scrollbar Customization */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #0A0807;
+}
+::-webkit-scrollbar-thumb {
+  background: #3A2F25;
+  border-radius: 4px;
+  border: 1px solid rgba(218, 165, 32, 0.2);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #E6B800;
 }
