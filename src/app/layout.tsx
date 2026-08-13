@@ -19,6 +19,11 @@ export const metadata: Metadata = {
   description: "Nikmati cita rasa Kopi Robusta murni kualitas premium asli dari Nagari Kabupaten Pasaman. Aroma kuat, rasa mantap, bitter-sweet seimbang tanpa ampas.",
   keywords: ["Yellof Coffee", "Kopi Robusta Pasaman", "Kopi Asli Nagari", "Kopi Robusta Premium", "Kopi Sumatera Barat", "Biji Kopi Murni"],
   authors: [{ name: "Yellof Coffee Pasaman" }],
+  icons: {
+    icon: "/images/yellof_logo.jpg",
+    shortcut: "/images/yellof_logo.jpg",
+    apple: "/images/yellof_logo.jpg",
+  },
   openGraph: {
     title: "Yellof Coffee | Kopi Robusta Premium Asli Pasaman",
     description: "Nikmatnya Kopi Berkualitas, Semangat Berlipat! Order via WhatsApp & Ojek Online.",
