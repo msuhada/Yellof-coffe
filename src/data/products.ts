@@ -11,7 +11,15 @@ export interface ProductVariant {
   features: string[];
 }
 
-export const YELLOF_PRODUCTS: ProductVariant[] = [
+export interface YellofContact {
+  whatsapp: string;
+  whatsappFormatted: string;
+  instagram: string;
+  address: string;
+  tagline: string;
+}
+
+export const DEFAULT_YELLOF_PRODUCTS: ProductVariant[] = [
   {
     id: "yellof-100g",
     name: "Yellof Coffee Robusta Premium",
@@ -79,10 +87,80 @@ export const YELLOF_PRODUCTS: ProductVariant[] = [
   }
 ];
 
-export const YELLOF_CONTACT = {
+export const DEFAULT_YELLOF_CONTACT: YellofContact = {
   whatsapp: "6282171032691",
   whatsappFormatted: "0821 7103 2691",
   instagram: "@uni.yellof",
   address: "Kabupaten Pasaman, Sumatera Barat, Indonesia",
   tagline: "Nikmatnya Kopi Berkualitas, Semangat Berlipat!"
 };
+
+// Backward-compatible aliases
+export const YELLOF_PRODUCTS = DEFAULT_YELLOF_PRODUCTS;
+export const YELLOF_CONTACT = DEFAULT_YELLOF_CONTACT;
+
+// --- localStorage helpers ---
+
+const PRODUCTS_STORAGE_KEY = "yellof_products";
+const CONTACT_STORAGE_KEY = "yellof_contact";
+const ADMIN_PASSWORD_KEY = "yellof_admin_password";
+
+const DEFAULT_ADMIN_PASSWORD = "yellof2024";
+
+export function getStoredProducts(): ProductVariant[] {
+  if (typeof window === "undefined") return DEFAULT_YELLOF_PRODUCTS;
+  try {
+    const stored = localStorage.getItem(PRODUCTS_STORAGE_KEY);
+    if (stored) {
+      const parsed = JSON.parse(stored) as ProductVariant[];
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
+  } catch {
+    // ignore parse errors
+  }
+  return DEFAULT_YELLOF_PRODUCTS;
+}
+
+export function saveProducts(products: ProductVariant[]): void {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(PRODUCTS_STORAGE_KEY, JSON.stringify(products));
+}
+
+export function resetProducts(): void {
+  if (typeof window === "undefined") return;
+  localStorage.removeItem(PRODUCTS_STORAGE_KEY);
+}
+
+export function getStoredContact(): YellofContact {
+  if (typeof window === "undefined") return DEFAULT_YELLOF_CONTACT;
+  try {
+    const stored = localStorage.getItem(CONTACT_STORAGE_KEY);
+    if (stored) {
+      const parsed = JSON.parse(stored) as YellofContact;
+      if (parsed && parsed.whatsapp) return parsed;
+    }
+  } catch {
+    // ignore parse errors
+  }
+  return DEFAULT_YELLOF_CONTACT;
+}
+
+export function saveContact(contact: YellofContact): void {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(CONTACT_STORAGE_KEY, JSON.stringify(contact));
+}
+
+export function resetContact(): void {
+  if (typeof window === "undefined") return;
+  localStorage.removeItem(CONTACT_STORAGE_KEY);
+}
+
+export function getAdminPassword(): string {
+  if (typeof window === "undefined") return DEFAULT_ADMIN_PASSWORD;
+  return localStorage.getItem(ADMIN_PASSWORD_KEY) || DEFAULT_ADMIN_PASSWORD;
+}
+
+export function setAdminPassword(newPassword: string): void {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(ADMIN_PASSWORD_KEY, newPassword);
+}

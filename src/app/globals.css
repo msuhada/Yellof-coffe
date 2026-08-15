@@ -76,9 +76,41 @@
   animation: steamRise 3.5s ease-out infinite;
 }
 
+/* Fade-in Animation for Testimonials slider */
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.4s ease-out;
+}
+
+/* Slide up animation */
+@keyframes slideUp {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slideUp {
+  animation: slideUp 0.5s ease-out;
+}
+
 /* Scrollbar Customization */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
 }
 ::-webkit-scrollbar-track {
   background: #0A0807;
@@ -90,4 +122,69 @@
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #E6B800;
+}
+
+/* Responsive: extra small screens (< 375px) */
+@media (max-width: 374px) {
+  .xs-text-xs {
+    font-size: 0.7rem !important;
+  }
+  .xs-p-2 {
+    padding: 0.5rem !important;
+  }
+  .xs-gap-2 {
+    gap: 0.5rem !important;
+  }
+}
+
+/* Ensure modals are usable on very small screens */
+@media (max-height: 600px) {
+  .modal-body-scroll {
+    max-height: 65vh;
+  }
+}
+
+/* Admin panel specific styles */
+.admin-input {
+  width: 100%;
+  padding: 0.625rem 0.875rem;
+  border-radius: 0.75rem;
+  background: #0D0A08;
+  border: 1px solid rgba(218, 165, 32, 0.3);
+  color: white;
+  font-size: 0.8125rem;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.admin-input:focus {
+  border-color: #FFDF6D;
+  box-shadow: 0 0 0 2px rgba(255, 223, 109, 0.1);
+}
+
+.admin-input::placeholder {
+  color: #6B5D4F;
+}
+
+/* Smooth number input */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  opacity: 1;
+  height: 24px;
+}
+
+/* Toast notification animation */
+@keyframes toastSlideIn {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-toast {
+  animation: toastSlideIn 0.3s ease-out;
 }

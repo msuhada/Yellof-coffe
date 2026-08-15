@@ -12,11 +12,15 @@ import { WhatsAppSection } from "@/components/WhatsAppSection";
 import { Footer } from "@/components/Footer";
 import { OrderModal } from "@/components/OrderModal";
 import { DeliveryAppModal } from "@/components/DeliveryAppModal";
+import { useProducts } from "@/hooks/useProducts";
 
 export default function Home() {
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
   const [isDeliveryModalOpen, setIsDeliveryModalOpen] = useState(false);
   const [selectedProductId, setSelectedProductId] = useState<string | undefined>(undefined);
+
+  // Dynamic product/contact data from localStorage (admin-editable)
+  const { products, contact } = useProducts();
 
   const handleOpenOrderModal = (productId?: string) => {
     setSelectedProductId(productId);
@@ -33,6 +37,7 @@ export default function Home() {
       <Header
         onOpenOrderModal={handleOpenOrderModal}
         onOpenDeliveryModal={handleOpenDeliveryModal}
+        contact={contact}
       />
 
       {/* HALAMAN 1: Hero Banner Widescreen Persis Gambar Referensi */}
@@ -42,6 +47,7 @@ export default function Home() {
       <MainOverviewGrid
         onOpenOrderModal={handleOpenOrderModal}
         onOpenDeliveryModal={handleOpenDeliveryModal}
+        contact={contact}
       />
 
       {/* HALAMAN KE-2 DETAIL: Katalog Lengkap, Keunggulan Detail, Testimoni & Footer */}
@@ -54,6 +60,8 @@ export default function Home() {
         <ProductCatalog
           onOpenOrderModal={handleOpenOrderModal}
           onOpenDeliveryModal={handleOpenDeliveryModal}
+          products={products}
+          contact={contact}
         />
 
         {/* Keunggulan Detail Section */}
@@ -63,10 +71,13 @@ export default function Home() {
         <Testimonials />
 
         {/* WhatsApp Banner & Guarantee */}
-        <WhatsAppSection onOpenOrderModal={() => handleOpenOrderModal()} />
+        <WhatsAppSection
+          onOpenOrderModal={() => handleOpenOrderModal()}
+          contact={contact}
+        />
 
         {/* Footer & Bar Garansi Pengiriman */}
-        <Footer />
+        <Footer contact={contact} />
       </div>
 
       {/* Interactive WhatsApp Order Modal */}
@@ -74,6 +85,8 @@ export default function Home() {
         isOpen={isOrderModalOpen}
         onClose={() => setIsOrderModalOpen(false)}
         initialProductId={selectedProductId}
+        products={products}
+        contact={contact}
       />
 
       {/* Interactive Delivery App Modal (Gojek / GoFood, ShopeeFood, GrabFood, Maxim) */}
