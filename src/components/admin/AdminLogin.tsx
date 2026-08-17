@@ -108,11 +108,6 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
             </button>
           </form>
 
-          <div className="text-center text-[10px] text-[#6B5D4F] space-y-0.5">
-            <p>Password default: <code className="text-[#A39688] bg-[#1A1412] px-1.5 py-0.5 rounded">yellof2024</code></p>
-            <p>Password bisa diganti setelah login.</p>
-          </div>
-
         </div>
 
         {/* Back Link */}
