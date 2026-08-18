@@ -2,16 +2,25 @@
 
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
-import { Coffee, MessageCircle, Menu, X, Truck } from "lucide-react";
+import { Coffee, MessageCircle, Menu, X, Truck, Megaphone } from "lucide-react";
 import { YellofContact, DEFAULT_YELLOF_CONTACT } from "@/data/products";
 
 interface HeaderProps {
   onOpenOrderModal: (productId?: string) => void;
   onOpenDeliveryModal: () => void;
   contact?: YellofContact;
+  promoBanner?: {
+    enabled: boolean;
+    text: string;
+  };
 }
 
-export const Header: React.FC<HeaderProps> = ({ onOpenOrderModal, onOpenDeliveryModal, contact }) => {
+export const Header: React.FC<HeaderProps> = ({
+  onOpenOrderModal,
+  onOpenDeliveryModal,
+  contact,
+  promoBanner,
+}) => {
   const contactData = contact || DEFAULT_YELLOF_CONTACT;
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -60,11 +69,12 @@ export const Header: React.FC<HeaderProps> = ({ onOpenOrderModal, onOpenDelivery
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         isScrolled
-          ? "bg-[#0A0807]/95 backdrop-blur-md border-b border-[#DAA520]/20 py-2 sm:py-2.5 shadow-2xl"
-          : "bg-gradient-to-b from-[#0A0807]/90 via-[#0A0807]/50 to-transparent py-2.5 sm:py-3 md:py-4"
+          ? "bg-[#0A0807]/95 backdrop-blur-md border-b border-[#DAA520]/20 shadow-2xl"
+          : "bg-gradient-to-b from-[#0A0807]/95 via-[#0A0807]/80 to-[#0A0807]/40"
       }`}
     >
-      <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 flex items-center justify-between">
+      {/* 1. MAIN NAVIGATION BAR */}
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-2 sm:py-2.5 md:py-3 flex items-center justify-between">
         
         {/* Official Yellof Coffee Logo Image */}
         <a href="#beranda" className="flex items-center group shrink-0">
@@ -73,7 +83,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenOrderModal, onOpenDelivery
             alt="Yellof Coffee Official Logo"
             width={200}
             height={70}
-            className="h-10 sm:h-14 md:h-16 lg:h-20 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
+            className="h-10 sm:h-12 md:h-14 lg:h-16 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
             priority
           />
         </a>
@@ -125,9 +135,17 @@ export const Header: React.FC<HeaderProps> = ({ onOpenOrderModal, onOpenDelivery
         </button>
       </div>
 
+      {/* 2. PROMO BANNER (Located cleanly BELOW the Navigation Tab/Menu) */}
+      {promoBanner?.enabled && promoBanner?.text && (
+        <div className="w-full bg-gradient-to-r from-[#FFD034] via-[#FFC72C] to-[#E6AF2E] text-[#0A0807] px-3 py-1 sm:py-1.5 text-center text-[10px] sm:text-xs font-black tracking-wide flex items-center justify-center gap-1.5 sm:gap-2 border-t border-[#0A0807]/20 shadow-md">
+          <Megaphone className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0 animate-bounce" />
+          <span className="truncate max-w-[92vw]">{promoBanner.text}</span>
+        </div>
+      )}
+
       {/* Mobile Drawer — Full overlay */}
       {mobileMenuOpen && (
-        <div className="md:hidden fixed inset-0 top-[52px] sm:top-[64px] bg-[#0F0C0A]/98 backdrop-blur-xl z-40 animate-fadeIn overflow-y-auto">
+        <div className="md:hidden fixed inset-0 top-[60px] bg-[#0F0C0A]/98 backdrop-blur-xl z-40 animate-fadeIn overflow-y-auto">
           <div className="px-5 sm:px-6 py-6 space-y-4">
             <div className="flex flex-col space-y-1">
               {navLinks.map((link) => (
