@@ -1,8 +1,14 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
-import { StoreSettings, GalleryPhotoItem, KeunggulanCardItem, DEFAULT_STORE_SETTINGS } from "@/data/storeSettings";
+import {
+  StoreSettings,
+  GalleryPhotoItem,
+  KeunggulanCardItem,
+  DEFAULT_STORE_SETTINGS,
+  normalizeStoreSettings,
+} from "@/data/storeSettings";
 import { ProductVariant, YellofContact } from "@/data/products";
 import { Order } from "@/data/orders";
 import {
@@ -48,17 +54,30 @@ export const AdminMasterSettings: React.FC<AdminMasterSettingsProps> = ({
   onResetSettings,
   onRestoreAllData,
 }) => {
-  const [formData, setFormData] = useState<StoreSettings>(JSON.parse(JSON.stringify(settings)));
+  const [formData, setFormData] = useState<StoreSettings>(() => normalizeStoreSettings(settings));
   const [activeSubTab, setActiveSubTab] = useState<"general" | "about" | "gallery" | "keunggulan" | "hero" | "backup">("about");
   const [newGrindOption, setNewGrindOption] = useState("");
   const [isSavedNotice, setIsSavedNotice] = useState(false);
+
+  // Sync if settings from props update
+  useEffect(() => {
+    if (settings) {
+      setFormData(normalizeStoreSettings(settings));
+    }
+  }, [settings]);
+
+  // Safe defaults
+  const about = formData.about || DEFAULT_STORE_SETTINGS.about;
+  const hero = formData.hero || DEFAULT_STORE_SETTINGS.hero;
+  const gallery = Array.isArray(formData.gallery) && formData.gallery.length > 0 ? formData.gallery : DEFAULT_STORE_SETTINGS.gallery;
+  const keunggulan = formData.keunggulan || DEFAULT_STORE_SETTINGS.keunggulan;
+  const grindOptions = Array.isArray(formData.availableGrindOptions) ? formData.availableGrindOptions : DEFAULT_STORE_SETTINGS.availableGrindOptions;
 
   // Helper for image upload (FileReader to Base64)
   const handleImageFileUpload = (e: React.ChangeEvent<HTMLInputElement>, onResult: (base64Url: string) => void) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Check size limit (max 4MB)
     if (file.size > 4 * 1024 * 1024) {
       alert("⚠️ Ukuran foto maksimal 4MB agar performa website tetap cepat.");
       return;
@@ -76,7 +95,8 @@ export const AdminMasterSettings: React.FC<AdminMasterSettingsProps> = ({
 
   const handleSave = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    onSaveSettings(formData);
+    const cleanSettings = normalizeStoreSettings(formData);
+    onSaveSettings(cleanSettings);
     setIsSavedNotice(true);
     setTimeout(() => setIsSavedNotice(false), 3000);
   };
@@ -84,94 +104,114 @@ export const AdminMasterSettings: React.FC<AdminMasterSettingsProps> = ({
   // Grind options handlers
   const handleAddGrind = () => {
     if (!newGrindOption.trim()) return;
-    setFormData({
-      ...formData,
-      availableGrindOptions: [...formData.availableGrindOptions, newGrindOption.trim()],
-    });
+    setFormData((prev) => ({
+      ...prev,
+      availableGrindOptions: [...(prev.availableGrindOptions || []), newGrindOption.trim()],
+    }));
     setNewGrindOption("");
   };
 
   const handleRemoveGrind = (index: number) => {
-    const updated = formData.availableGrindOptions.filter((_, i) => i !== index);
-    setFormData({
-      ...formData,
-      availableGrindOptions: updated,
-    });
+    setFormData((prev) => ({
+      ...prev,
+      availableGrindOptions: (prev.availableGrindOptions || []).filter((_, i) => i !== index),
+    }));
   };
 
   // About checklist handlers
   const handleAddAboutFeature = () => {
-    setFormData({
-      ...formData,
+    setFormData((prev) => ({
+      ...prev,
       about: {
-        ...formData.about,
-        features: [...formData.about.features, "Keunggulan baru"],
+        ...(prev.about || DEFAULT_STORE_SETTINGS.about),
+        features: [...(prev.about?.features || DEFAULT_STORE_SETTINGS.about.features), "Keunggulan baru"],
       },
-    });
+    }));
   };
 
   const handleUpdateAboutFeature = (index: number, val: string) => {
-    const updated = [...formData.about.features];
-    updated[index] = val;
-    setFormData({
-      ...formData,
-      about: { ...formData.about, features: updated },
+    setFormData((prev) => {
+      const currentAbout = prev.about || DEFAULT_STORE_SETTINGS.about;
+      const updated = [...(currentAbout.features || [])];
+      updated[index] = val;
+      return {
+        ...prev,
+        about: { ...currentAbout, features: updated },
+      };
     });
   };
 
   const handleRemoveAboutFeature = (index: number) => {
-    const updated = formData.about.features.filter((_, i) => i !== index);
-    setFormData({
-      ...formData,
-      about: { ...formData.about, features: updated },
+    setFormData((prev) => {
+      const currentAbout = prev.about || DEFAULT_STORE_SETTINGS.about;
+      const updated = (currentAbout.features || []).filter((_, i) => i !== index);
+      return {
+        ...prev,
+        about: { ...currentAbout, features: updated },
+      };
     });
   };
 
   // Gallery handlers
   const handleUpdateGalleryPhoto = (index: number, field: keyof GalleryPhotoItem, value: string) => {
-    const updated = [...formData.gallery];
-    updated[index] = { ...updated[index], [field]: value };
-    setFormData({
-      ...formData,
-      gallery: updated,
+    setFormData((prev) => {
+      const currentGallery = Array.isArray(prev.gallery) && prev.gallery.length > 0 ? prev.gallery : DEFAULT_STORE_SETTINGS.gallery;
+      const updated = [...currentGallery];
+      updated[index] = { ...updated[index], [field]: value };
+      return {
+        ...prev,
+        gallery: updated,
+      };
     });
   };
 
   // Keunggulan card handlers
   const handleUpdateKeunggulanCard = (index: number, field: keyof KeunggulanCardItem, value: string) => {
-    const updated = [...formData.keunggulan.cards];
-    updated[index] = { ...updated[index], [field]: value };
-    setFormData({
-      ...formData,
-      keunggulan: { ...formData.keunggulan, cards: updated },
+    setFormData((prev) => {
+      const currentKeunggulan = prev.keunggulan || DEFAULT_STORE_SETTINGS.keunggulan;
+      const updatedCards = [...(currentKeunggulan.cards || DEFAULT_STORE_SETTINGS.keunggulan.cards)];
+      updatedCards[index] = { ...updatedCards[index], [field]: value };
+      return {
+        ...prev,
+        keunggulan: { ...currentKeunggulan, cards: updatedCards },
+      };
     });
   };
 
   // Keunggulan checklist handlers
   const handleAddKeunggulanChecklist = () => {
-    setFormData({
-      ...formData,
-      keunggulan: {
-        ...formData.keunggulan,
-        checklist: [...formData.keunggulan.checklist, "Poin mutu baru"],
-      },
+    setFormData((prev) => {
+      const currentKeunggulan = prev.keunggulan || DEFAULT_STORE_SETTINGS.keunggulan;
+      return {
+        ...prev,
+        keunggulan: {
+          ...currentKeunggulan,
+          checklist: [...(currentKeunggulan.checklist || []), "Poin mutu baru"],
+        },
+      };
     });
   };
 
   const handleUpdateKeunggulanChecklist = (index: number, val: string) => {
-    const updated = [...formData.keunggulan.checklist];
-    updated[index] = val;
-    setFormData({
-      ...formData,
-      keunggulan: { ...formData.keunggulan, checklist: updated },
+    setFormData((prev) => {
+      const currentKeunggulan = prev.keunggulan || DEFAULT_STORE_SETTINGS.keunggulan;
+      const updated = [...(currentKeunggulan.checklist || [])];
+      updated[index] = val;
+      return {
+        ...prev,
+        keunggulan: { ...currentKeunggulan, checklist: updated },
+      };
     });
   };
 
   const handleRemoveKeunggulanChecklist = (index: number) => {
-    const updated = formData.keunggulan.checklist.filter((_, i) => i !== index);
-    setFormData({
-      ...formData,
-      keunggulan: { ...formData.keunggulan, checklist: updated },
+    setFormData((prev) => {
+      const currentKeunggulan = prev.keunggulan || DEFAULT_STORE_SETTINGS.keunggulan;
+      const updated = (currentKeunggulan.checklist || []).filter((_, i) => i !== index);
+      return {
+        ...prev,
+        keunggulan: { ...currentKeunggulan, checklist: updated },
+      };
     });
   };
 
@@ -208,7 +248,7 @@ export const AdminMasterSettings: React.FC<AdminMasterSettingsProps> = ({
           if (confirm("Yakin ingin memulihkan seluruh data dan pengaturan dari file backup ini?")) {
             onRestoreAllData(parsed);
             if (parsed.settings) {
-              setFormData(parsed.settings);
+              setFormData(normalizeStoreSettings(parsed.settings));
             }
             alert("✅ Seluruh data & gambar berhasil dipulihkan dari backup!");
           }
@@ -311,7 +351,7 @@ export const AdminMasterSettings: React.FC<AdminMasterSettingsProps> = ({
                 {/* Live Image Preview */}
                 <div className="relative w-32 h-24 sm:w-40 sm:h-28 rounded-xl overflow-hidden border-2 border-[#DAA520]/40 shrink-0 bg-[#14100E]">
                   <Image
-                    src={formData.about.image || "/images/pasaman_plantation.png"}
+                    src={about.image || "/images/pasaman_plantation.png"}
                     alt="Preview Tentang Kami"
                     fill
                     className="object-cover"
@@ -327,20 +367,20 @@ export const AdminMasterSettings: React.FC<AdminMasterSettingsProps> = ({
                       <input
                         type="file"
                         accept="image/*"
-                        onChange={(e) => handleImageFileUpload(e, (base64) => setFormData({
-                          ...formData,
-                          about: { ...formData.about, image: base64 }
-                        }))}
+                        onChange={(e) => handleImageFileUpload(e, (base64) => setFormData((prev) => ({
+                          ...prev,
+                          about: { ...(prev.about || DEFAULT_STORE_SETTINGS.about), image: base64 }
+                        })))}
                         className="hidden"
                       />
                     </label>
 
                     <button
                       type="button"
-                      onClick={() => setFormData({
-                        ...formData,
-                        about: { ...formData.about, image: "/images/pasaman_plantation.png" }
-                      })}
+                      onClick={() => setFormData((prev) => ({
+                        ...prev,
+                        about: { ...(prev.about || DEFAULT_STORE_SETTINGS.about), image: "/images/pasaman_plantation.png" }
+                      }))}
                       className="px-3 py-2 rounded-xl bg-[#14100E] border border-[#2A211B] text-[#A39688] hover:text-white text-xs"
                     >
                       Gunakan Foto Asli Pasaman
@@ -352,11 +392,11 @@ export const AdminMasterSettings: React.FC<AdminMasterSettingsProps> = ({
                     <input
                       type="text"
                       placeholder="https://..."
-                      value={formData.about.image}
-                      onChange={(e) => setFormData({
-                        ...formData,
-                        about: { ...formData.about, image: e.target.value }
-                      })}
+                      value={about.image}
+                      onChange={(e) => setFormData((prev) => ({
+                        ...prev,
+                        about: { ...(prev.about || DEFAULT_STORE_SETTINGS.about), image: e.target.value }
+                      }))}
                       className="w-full px-3 py-1.5 rounded-lg bg-[#14100E] border border-[#2A211B] text-white text-xs focus:outline-none focus:border-[#FFC72C]"
                     />
                   </div>
@@ -371,11 +411,11 @@ export const AdminMasterSettings: React.FC<AdminMasterSettingsProps> = ({
                   </label>
                   <input
                     type="text"
-                    value={formData.about.locationTitle}
-                    onChange={(e) => setFormData({
-                      ...formData,
-                      about: { ...formData.about, locationTitle: e.target.value }
-                    })}
+                    value={about.locationTitle}
+                    onChange={(e) => setFormData((prev) => ({
+                      ...prev,
+                      about: { ...(prev.about || DEFAULT_STORE_SETTINGS.about), locationTitle: e.target.value }
+                    }))}
                     className="w-full px-3 py-2 rounded-lg bg-[#14100E] border border-[#2A211B] text-white text-xs focus:outline-none focus:border-[#FFC72C]"
                   />
                 </div>
@@ -385,11 +425,11 @@ export const AdminMasterSettings: React.FC<AdminMasterSettingsProps> = ({
                   </label>
                   <input
                     type="text"
-                    value={formData.about.locationSubtitle}
-                    onChange={(e) => setFormData({
-                      ...formData,
-                      about: { ...formData.about, locationSubtitle: e.target.value }
-                    })}
+                    value={about.locationSubtitle}
+                    onChange={(e) => setFormData((prev) => ({
+                      ...prev,
+                      about: { ...(prev.about || DEFAULT_STORE_SETTINGS.about), locationSubtitle: e.target.value }
+                    }))}
                     className="w-full px-3 py-2 rounded-lg bg-[#14100E] border border-[#2A211B] text-white text-xs focus:outline-none focus:border-[#FFC72C]"
                   />
                 </div>
@@ -407,11 +447,11 @@ export const AdminMasterSettings: React.FC<AdminMasterSettingsProps> = ({
                   <label className="text-[10px] text-[#A39688] uppercase block">Badge Atas:</label>
                   <input
                     type="text"
-                    value={formData.about.badge}
-                    onChange={(e) => setFormData({
-                      ...formData,
-                      about: { ...formData.about, badge: e.target.value }
-                    })}
+                    value={about.badge}
+                    onChange={(e) => setFormData((prev) => ({
+                      ...prev,
+                      about: { ...(prev.about || DEFAULT_STORE_SETTINGS.about), badge: e.target.value }
+                    }))}
                     className="w-full px-3 py-2 rounded-lg bg-[#14100E] border border-[#2A211B] text-white text-xs focus:outline-none focus:border-[#FFC72C]"
                   />
                 </div>
@@ -419,11 +459,11 @@ export const AdminMasterSettings: React.FC<AdminMasterSettingsProps> = ({
                   <label className="text-[10px] text-[#A39688] uppercase block">Judul Baris 1:</label>
                   <input
                     type="text"
-                    value={formData.about.title}
-                    onChange={(e) => setFormData({
-                      ...formData,
-                      about: { ...formData.about, title: e.target.value }
-                    })}
+                    value={about.title}
+                    onChange={(e) => setFormData((prev) => ({
+                      ...prev,
+                      about: { ...(prev.about || DEFAULT_STORE_SETTINGS.about), title: e.target.value }
+                    }))}
                     className="w-full px-3 py-2 rounded-lg bg-[#14100E] border border-[#2A211B] text-white text-xs focus:outline-none focus:border-[#FFC72C]"
                   />
                 </div>
@@ -431,11 +471,11 @@ export const AdminMasterSettings: React.FC<AdminMasterSettingsProps> = ({
                   <label className="text-[10px] text-[#A39688] uppercase block">Highlight Emas (Baris 2):</label>
                   <input
                     type="text"
-                    value={formData.about.titleHighlight}
-                    onChange={(e) => setFormData({
-                      ...formData,
-                      about: { ...formData.about, titleHighlight: e.target.value }
-                    })}
+                    value={about.titleHighlight}
+                    onChange={(e) => setFormData((prev) => ({
+                      ...prev,
+                      about: { ...(prev.about || DEFAULT_STORE_SETTINGS.about), titleHighlight: e.target.value }
+                    }))}
                     className="w-full px-3 py-2 rounded-lg bg-[#14100E] border border-[#2A211B] text-[#FFC72C] font-bold text-xs focus:outline-none focus:border-[#FFC72C]"
                   />
                 </div>
@@ -445,11 +485,11 @@ export const AdminMasterSettings: React.FC<AdminMasterSettingsProps> = ({
                 <label className="text-[10px] text-[#A39688] uppercase block">Paragraf Pembuka:</label>
                 <textarea
                   rows={2}
-                  value={formData.about.description1}
-                  onChange={(e) => setFormData({
-                    ...formData,
-                    about: { ...formData.about, description1: e.target.value }
-                  })}
+                  value={about.description1}
+                  onChange={(e) => setFormData((prev) => ({
+                    ...prev,
+                    about: { ...(prev.about || DEFAULT_STORE_SETTINGS.about), description1: e.target.value }
+                  }))}
                   className="w-full px-3 py-2 rounded-lg bg-[#14100E] border border-[#2A211B] text-white text-xs focus:outline-none focus:border-[#FFC72C]"
                 />
               </div>
@@ -458,11 +498,11 @@ export const AdminMasterSettings: React.FC<AdminMasterSettingsProps> = ({
                 <label className="text-[10px] text-[#A39688] uppercase block">Paragraf Detail Kualitas:</label>
                 <textarea
                   rows={2}
-                  value={formData.about.description2}
-                  onChange={(e) => setFormData({
-                    ...formData,
-                    about: { ...formData.about, description2: e.target.value }
-                  })}
+                  value={about.description2}
+                  onChange={(e) => setFormData((prev) => ({
+                    ...prev,
+                    about: { ...(prev.about || DEFAULT_STORE_SETTINGS.about), description2: e.target.value }
+                  }))}
                   className="w-full px-3 py-2 rounded-lg bg-[#14100E] border border-[#2A211B] text-white text-xs focus:outline-none focus:border-[#FFC72C]"
                 />
               </div>
@@ -484,7 +524,7 @@ export const AdminMasterSettings: React.FC<AdminMasterSettingsProps> = ({
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {formData.about.features.map((feat, idx) => (
+                {(about.features || []).map((feat, idx) => (
                   <div key={idx} className="flex items-center gap-2">
                     <span className="text-xs text-[#A39688] font-bold w-4">{idx + 1}.</span>
                     <input
@@ -493,7 +533,7 @@ export const AdminMasterSettings: React.FC<AdminMasterSettingsProps> = ({
                       onChange={(e) => handleUpdateAboutFeature(idx, e.target.value)}
                       className="flex-1 px-3 py-1.5 rounded-lg bg-[#14100E] border border-[#2A211B] text-white text-xs focus:outline-none focus:border-[#FFC72C]"
                     />
-                    {formData.about.features.length > 1 && (
+                    {(about.features || []).length > 1 && (
                       <button
                         type="button"
                         onClick={() => handleRemoveAboutFeature(idx)}
@@ -523,7 +563,7 @@ export const AdminMasterSettings: React.FC<AdminMasterSettingsProps> = ({
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {formData.gallery.map((photo, idx) => (
+              {gallery.map((photo, idx) => (
                 <div key={photo.id || idx} className="p-4 rounded-xl bg-[#0A0807] border border-[#2A211B] space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold text-[#FFC72C] uppercase">
@@ -612,7 +652,7 @@ export const AdminMasterSettings: React.FC<AdminMasterSettingsProps> = ({
               <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
                 <div className="relative w-28 h-28 rounded-xl overflow-hidden border-2 border-[#DAA520]/40 shrink-0 bg-[#14100E]">
                   <Image
-                    src={formData.keunggulan.image || "/images/coffee_cherries.png"}
+                    src={keunggulan.image || "/images/coffee_cherries.png"}
                     alt="Preview Keunggulan"
                     fill
                     className="object-cover"
@@ -627,20 +667,20 @@ export const AdminMasterSettings: React.FC<AdminMasterSettingsProps> = ({
                       <input
                         type="file"
                         accept="image/*"
-                        onChange={(e) => handleImageFileUpload(e, (base64) => setFormData({
-                          ...formData,
-                          keunggulan: { ...formData.keunggulan, image: base64 }
-                        }))}
+                        onChange={(e) => handleImageFileUpload(e, (base64) => setFormData((prev) => ({
+                          ...prev,
+                          keunggulan: { ...(prev.keunggulan || DEFAULT_STORE_SETTINGS.keunggulan), image: base64 }
+                        })))}
                         className="hidden"
                       />
                     </label>
 
                     <button
                       type="button"
-                      onClick={() => setFormData({
-                        ...formData,
-                        keunggulan: { ...formData.keunggulan, image: "/images/coffee_cherries.png" }
-                      })}
+                      onClick={() => setFormData((prev) => ({
+                        ...prev,
+                        keunggulan: { ...(prev.keunggulan || DEFAULT_STORE_SETTINGS.keunggulan), image: "/images/coffee_cherries.png" }
+                      }))}
                       className="px-3 py-2 rounded-xl bg-[#14100E] border border-[#2A211B] text-[#A39688] hover:text-white text-xs"
                     >
                       Gunakan Foto Asli Default
@@ -651,11 +691,11 @@ export const AdminMasterSettings: React.FC<AdminMasterSettingsProps> = ({
                     <span className="text-[10px] text-[#A39688]">Teks Kutipan Pada Foto:</span>
                     <input
                       type="text"
-                      value={formData.keunggulan.imageQuote}
-                      onChange={(e) => setFormData({
-                        ...formData,
-                        keunggulan: { ...formData.keunggulan, imageQuote: e.target.value }
-                      })}
+                      value={keunggulan.imageQuote}
+                      onChange={(e) => setFormData((prev) => ({
+                        ...prev,
+                        keunggulan: { ...(prev.keunggulan || DEFAULT_STORE_SETTINGS.keunggulan), imageQuote: e.target.value }
+                      }))}
                       className="w-full px-3 py-1.5 rounded-lg bg-[#14100E] border border-[#2A211B] text-white text-xs focus:outline-none focus:border-[#FFC72C]"
                     />
                   </div>
@@ -670,7 +710,7 @@ export const AdminMasterSettings: React.FC<AdminMasterSettingsProps> = ({
               </label>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {formData.keunggulan.cards.map((card, idx) => (
+                {(keunggulan.cards || []).map((card, idx) => (
                   <div key={card.id || idx} className="p-3 rounded-lg bg-[#14100E] border border-[#2A211B] space-y-2">
                     <div className="flex items-center gap-2">
                       <span className="w-5 h-5 rounded-full bg-[#FFC72C] text-[#0A0807] text-[10px] font-black flex items-center justify-center">
@@ -712,7 +752,7 @@ export const AdminMasterSettings: React.FC<AdminMasterSettingsProps> = ({
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {formData.keunggulan.checklist.map((pt, idx) => (
+                {(keunggulan.checklist || []).map((pt, idx) => (
                   <div key={idx} className="flex items-center gap-2">
                     <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
                     <input
@@ -721,7 +761,7 @@ export const AdminMasterSettings: React.FC<AdminMasterSettingsProps> = ({
                       onChange={(e) => handleUpdateKeunggulanChecklist(idx, e.target.value)}
                       className="flex-1 px-3 py-1.5 rounded-lg bg-[#14100E] border border-[#2A211B] text-white text-xs focus:outline-none focus:border-[#FFC72C]"
                     />
-                    {formData.keunggulan.checklist.length > 1 && (
+                    {(keunggulan.checklist || []).length > 1 && (
                       <button
                         type="button"
                         onClick={() => handleRemoveKeunggulanChecklist(idx)}
@@ -758,7 +798,7 @@ export const AdminMasterSettings: React.FC<AdminMasterSettingsProps> = ({
               <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
                 <div className="relative w-36 h-20 rounded-xl overflow-hidden border-2 border-[#DAA520]/40 shrink-0 bg-[#14100E]">
                   <Image
-                    src={formData.hero.bgImage || "/images/user_provided_bg.jpg"}
+                    src={hero.bgImage || "/images/user_provided_bg.jpg"}
                     alt="Preview Hero Background"
                     fill
                     className="object-cover"
@@ -773,20 +813,20 @@ export const AdminMasterSettings: React.FC<AdminMasterSettingsProps> = ({
                       <input
                         type="file"
                         accept="image/*"
-                        onChange={(e) => handleImageFileUpload(e, (base64) => setFormData({
-                          ...formData,
-                          hero: { ...formData.hero, bgImage: base64 }
-                        }))}
+                        onChange={(e) => handleImageFileUpload(e, (base64) => setFormData((prev) => ({
+                          ...prev,
+                          hero: { ...(prev.hero || DEFAULT_STORE_SETTINGS.hero), bgImage: base64 }
+                        })))}
                         className="hidden"
                       />
                     </label>
 
                     <button
                       type="button"
-                      onClick={() => setFormData({
-                        ...formData,
-                        hero: { ...formData.hero, bgImage: "/images/user_provided_bg.jpg" }
-                      })}
+                      onClick={() => setFormData((prev) => ({
+                        ...prev,
+                        hero: { ...(prev.hero || DEFAULT_STORE_SETTINGS.hero), bgImage: "/images/user_provided_bg.jpg" }
+                      }))}
                       className="px-3 py-2 rounded-xl bg-[#14100E] border border-[#2A211B] text-[#A39688] hover:text-white text-xs"
                     >
                       Gunakan Background Asli
@@ -796,11 +836,11 @@ export const AdminMasterSettings: React.FC<AdminMasterSettingsProps> = ({
                   <input
                     type="text"
                     placeholder="URL gambar..."
-                    value={formData.hero.bgImage}
-                    onChange={(e) => setFormData({
-                      ...formData,
-                      hero: { ...formData.hero, bgImage: e.target.value }
-                    })}
+                    value={hero.bgImage}
+                    onChange={(e) => setFormData((prev) => ({
+                      ...prev,
+                      hero: { ...(prev.hero || DEFAULT_STORE_SETTINGS.hero), bgImage: e.target.value }
+                    }))}
                     className="w-full px-3 py-1.5 rounded-lg bg-[#14100E] border border-[#2A211B] text-white text-xs focus:outline-none focus:border-[#FFC72C]"
                   />
                 </div>
@@ -817,11 +857,11 @@ export const AdminMasterSettings: React.FC<AdminMasterSettingsProps> = ({
                 <label className="text-[10px] text-[#A39688] uppercase block">Tagline Atas (Huruf Bersambung):</label>
                 <input
                   type="text"
-                  value={formData.hero.tagline}
-                  onChange={(e) => setFormData({
-                    ...formData,
-                    hero: { ...formData.hero, tagline: e.target.value }
-                  })}
+                  value={hero.tagline}
+                  onChange={(e) => setFormData((prev) => ({
+                    ...prev,
+                    hero: { ...(prev.hero || DEFAULT_STORE_SETTINGS.hero), tagline: e.target.value }
+                  }))}
                   className="w-full px-3 py-2 rounded-lg bg-[#14100E] border border-[#2A211B] text-white text-xs focus:outline-none focus:border-[#FFC72C]"
                 />
               </div>
@@ -831,11 +871,11 @@ export const AdminMasterSettings: React.FC<AdminMasterSettingsProps> = ({
                   <label className="text-[10px] text-[#A39688] uppercase block">Headline Baris 1:</label>
                   <input
                     type="text"
-                    value={formData.hero.headline1}
-                    onChange={(e) => setFormData({
-                      ...formData,
-                      hero: { ...formData.hero, headline1: e.target.value }
-                    })}
+                    value={hero.headline1}
+                    onChange={(e) => setFormData((prev) => ({
+                      ...prev,
+                      hero: { ...(prev.hero || DEFAULT_STORE_SETTINGS.hero), headline1: e.target.value }
+                    }))}
                     className="w-full px-3 py-2 rounded-lg bg-[#14100E] border border-[#2A211B] text-white text-xs font-black focus:outline-none focus:border-[#FFC72C]"
                   />
                 </div>
@@ -843,11 +883,11 @@ export const AdminMasterSettings: React.FC<AdminMasterSettingsProps> = ({
                   <label className="text-[10px] text-[#A39688] uppercase block">Highlight Emas (Baris 2):</label>
                   <input
                     type="text"
-                    value={formData.hero.headlineHighlight}
-                    onChange={(e) => setFormData({
-                      ...formData,
-                      hero: { ...formData.hero, headlineHighlight: e.target.value }
-                    })}
+                    value={hero.headlineHighlight}
+                    onChange={(e) => setFormData((prev) => ({
+                      ...prev,
+                      hero: { ...(prev.hero || DEFAULT_STORE_SETTINGS.hero), headlineHighlight: e.target.value }
+                    }))}
                     className="w-full px-3 py-2 rounded-lg bg-[#14100E] border border-[#2A211B] text-[#FFC72C] text-xs font-black focus:outline-none focus:border-[#FFC72C]"
                   />
                 </div>
@@ -855,11 +895,11 @@ export const AdminMasterSettings: React.FC<AdminMasterSettingsProps> = ({
                   <label className="text-[10px] text-[#A39688] uppercase block">Headline Baris 3:</label>
                   <input
                     type="text"
-                    value={formData.hero.headline3}
-                    onChange={(e) => setFormData({
-                      ...formData,
-                      hero: { ...formData.hero, headline3: e.target.value }
-                    })}
+                    value={hero.headline3}
+                    onChange={(e) => setFormData((prev) => ({
+                      ...prev,
+                      hero: { ...(prev.hero || DEFAULT_STORE_SETTINGS.hero), headline3: e.target.value }
+                    }))}
                     className="w-full px-3 py-2 rounded-lg bg-[#14100E] border border-[#2A211B] text-[#FFC72C] text-xs font-black focus:outline-none focus:border-[#FFC72C]"
                   />
                 </div>
@@ -869,11 +909,11 @@ export const AdminMasterSettings: React.FC<AdminMasterSettingsProps> = ({
                 <label className="text-[10px] text-[#A39688] uppercase block">Deskripsi Hero:</label>
                 <textarea
                   rows={2}
-                  value={formData.hero.description}
-                  onChange={(e) => setFormData({
-                    ...formData,
-                    hero: { ...formData.hero, description: e.target.value }
-                  })}
+                  value={hero.description}
+                  onChange={(e) => setFormData((prev) => ({
+                    ...prev,
+                    hero: { ...(prev.hero || DEFAULT_STORE_SETTINGS.hero), description: e.target.value }
+                  }))}
                   className="w-full px-3 py-2 rounded-lg bg-[#14100E] border border-[#2A211B] text-white text-xs focus:outline-none focus:border-[#FFC72C]"
                 />
               </div>
@@ -900,7 +940,7 @@ export const AdminMasterSettings: React.FC<AdminMasterSettingsProps> = ({
                 <input
                   type="text"
                   value={formData.storeName}
-                  onChange={(e) => setFormData({ ...formData, storeName: e.target.value })}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, storeName: e.target.value }))}
                   className="w-full px-3 py-2 rounded-lg bg-[#14100E] border border-[#2A211B] text-white text-xs font-bold focus:outline-none focus:border-[#FFC72C]"
                 />
               </div>
@@ -908,7 +948,7 @@ export const AdminMasterSettings: React.FC<AdminMasterSettingsProps> = ({
                 <label className="text-[10px] sm:text-xs font-bold text-[#A39688] uppercase block">Status Toko:</label>
                 <select
                   value={formData.storeStatus}
-                  onChange={(e) => setFormData({ ...formData, storeStatus: e.target.value as "open" | "busy" | "closed" })}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, storeStatus: e.target.value as "open" | "busy" | "closed" }))}
                   className="w-full px-3 py-2 rounded-lg bg-[#14100E] border border-[#2A211B] text-white text-xs font-bold focus:outline-none focus:border-[#FFC72C]"
                 >
                   <option value="open">🟢 Toko Buka (Menerima Pesanan)</option>
@@ -927,7 +967,7 @@ export const AdminMasterSettings: React.FC<AdminMasterSettingsProps> = ({
                 </div>
                 <button
                   type="button"
-                  onClick={() => setFormData({ ...formData, enablePromoBanner: !formData.enablePromoBanner })}
+                  onClick={() => setFormData((prev) => ({ ...prev, enablePromoBanner: !prev.enablePromoBanner }))}
                   className={`px-3 py-1 rounded-full text-[10px] font-black transition-colors ${
                     formData.enablePromoBanner ? "bg-[#FFC72C] text-[#0A0807]" : "bg-[#2A211B] text-[#A39688]"
                   }`}
@@ -939,7 +979,7 @@ export const AdminMasterSettings: React.FC<AdminMasterSettingsProps> = ({
               <textarea
                 rows={2}
                 value={formData.promoBannerText}
-                onChange={(e) => setFormData({ ...formData, promoBannerText: e.target.value })}
+                onChange={(e) => setFormData((prev) => ({ ...prev, promoBannerText: e.target.value }))}
                 className="w-full px-3 py-2 rounded-lg bg-[#14100E] border border-[#2A211B] text-white text-xs focus:outline-none focus:border-[#FFC72C]"
                 placeholder="Tuliskan promo yang akan bergulir..."
               />
@@ -952,10 +992,10 @@ export const AdminMasterSettings: React.FC<AdminMasterSettingsProps> = ({
               </div>
 
               <div className="space-y-2">
-                {formData.availableGrindOptions.map((opt, idx) => (
+                {grindOptions.map((opt, idx) => (
                   <div key={idx} className="flex items-center justify-between p-2 rounded-lg bg-[#14100E] border border-[#2A211B]">
                     <span className="text-xs text-white font-semibold">{opt}</span>
-                    {formData.availableGrindOptions.length > 1 && (
+                    {grindOptions.length > 1 && (
                       <button
                         type="button"
                         onClick={() => handleRemoveGrind(idx)}

@@ -172,6 +172,53 @@ export const DEFAULT_STORE_SETTINGS: StoreSettings = {
   },
 };
 
+export function normalizeStoreSettings(raw?: Partial<StoreSettings> | null): StoreSettings {
+  if (!raw || typeof raw !== "object") return DEFAULT_STORE_SETTINGS;
+
+  return {
+    ...DEFAULT_STORE_SETTINGS,
+    ...raw,
+    hero: {
+      ...DEFAULT_STORE_SETTINGS.hero,
+      ...(raw.hero || {}),
+    },
+    about: {
+      ...DEFAULT_STORE_SETTINGS.about,
+      ...(raw.about || {}),
+      features:
+        Array.isArray(raw.about?.features) && raw.about.features.length > 0
+          ? raw.about.features
+          : DEFAULT_STORE_SETTINGS.about.features,
+    },
+    gallery:
+      Array.isArray(raw.gallery) && raw.gallery.length > 0
+        ? raw.gallery.map((g, i) => ({
+            ...DEFAULT_STORE_SETTINGS.gallery[i % DEFAULT_STORE_SETTINGS.gallery.length],
+            ...g,
+          }))
+        : DEFAULT_STORE_SETTINGS.gallery,
+    keunggulan: {
+      ...DEFAULT_STORE_SETTINGS.keunggulan,
+      ...(raw.keunggulan || {}),
+      cards:
+        Array.isArray(raw.keunggulan?.cards) && raw.keunggulan.cards.length > 0
+          ? raw.keunggulan.cards.map((c, i) => ({
+              ...DEFAULT_STORE_SETTINGS.keunggulan.cards[i % DEFAULT_STORE_SETTINGS.keunggulan.cards.length],
+              ...c,
+            }))
+          : DEFAULT_STORE_SETTINGS.keunggulan.cards,
+      checklist:
+        Array.isArray(raw.keunggulan?.checklist) && raw.keunggulan.checklist.length > 0
+          ? raw.keunggulan.checklist
+          : DEFAULT_STORE_SETTINGS.keunggulan.checklist,
+    },
+    availableGrindOptions:
+      Array.isArray(raw.availableGrindOptions) && raw.availableGrindOptions.length > 0
+        ? raw.availableGrindOptions
+        : DEFAULT_STORE_SETTINGS.availableGrindOptions,
+  };
+}
+
 const STORE_SETTINGS_KEY = "yellof_store_settings";
 
 export function getStoredStoreSettings(): StoreSettings {
@@ -180,25 +227,7 @@ export function getStoredStoreSettings(): StoreSettings {
     const stored = localStorage.getItem(STORE_SETTINGS_KEY);
     if (stored) {
       const parsed = JSON.parse(stored) as Partial<StoreSettings>;
-      if (parsed && typeof parsed === "object") {
-        return {
-          ...DEFAULT_STORE_SETTINGS,
-          ...parsed,
-          hero: { ...DEFAULT_STORE_SETTINGS.hero, ...(parsed.hero || {}) },
-          about: {
-            ...DEFAULT_STORE_SETTINGS.about,
-            ...(parsed.about || {}),
-            features: parsed.about?.features || DEFAULT_STORE_SETTINGS.about.features,
-          },
-          gallery: Array.isArray(parsed.gallery) && parsed.gallery.length > 0 ? parsed.gallery : DEFAULT_STORE_SETTINGS.gallery,
-          keunggulan: {
-            ...DEFAULT_STORE_SETTINGS.keunggulan,
-            ...(parsed.keunggulan || {}),
-            cards: parsed.keunggulan?.cards || DEFAULT_STORE_SETTINGS.keunggulan.cards,
-            checklist: parsed.keunggulan?.checklist || DEFAULT_STORE_SETTINGS.keunggulan.checklist,
-          },
-        };
-      }
+      return normalizeStoreSettings(parsed);
     }
   } catch {
     // fallback
@@ -208,7 +237,8 @@ export function getStoredStoreSettings(): StoreSettings {
 
 export function saveStoreSettings(settings: StoreSettings): void {
   if (typeof window === "undefined") return;
-  localStorage.setItem(STORE_SETTINGS_KEY, JSON.stringify(settings));
+  const normalized = normalizeStoreSettings(settings);
+  localStorage.setItem(STORE_SETTINGS_KEY, JSON.stringify(normalized));
 }
 
 export function resetStoreSettings(): void {
