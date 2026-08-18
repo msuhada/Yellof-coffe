@@ -13,6 +13,8 @@ import { Footer } from "@/components/Footer";
 import { OrderModal } from "@/components/OrderModal";
 import { DeliveryAppModal } from "@/components/DeliveryAppModal";
 import { useProducts } from "@/hooks/useProducts";
+import { useStoreSettings } from "@/hooks/useStoreSettings";
+import { Sparkles, Megaphone } from "lucide-react";
 
 export default function Home() {
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
@@ -21,6 +23,7 @@ export default function Home() {
 
   // Dynamic product/contact data from localStorage (admin-editable)
   const { products, contact } = useProducts();
+  const { settings } = useStoreSettings();
 
   const handleOpenOrderModal = (productId?: string) => {
     setSelectedProductId(productId);
@@ -33,6 +36,15 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-[#0A0807] text-[#F5EFE6] relative selection:bg-[#FFC72C] selection:text-[#0A0807]">
+      
+      {/* Global Promo Announcement Bar (if enabled in Admin Master Settings) */}
+      {settings.enablePromoBanner && settings.promoBannerText && (
+        <div className="relative z-50 bg-gradient-to-r from-[#FFD034] via-[#FFC72C] to-[#E6AF2E] text-[#0A0807] px-3 py-1.5 text-center text-[10px] sm:text-xs font-bold tracking-wide flex items-center justify-center gap-2 shadow-sm">
+          <Megaphone className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0 animate-bounce" />
+          <span className="truncate max-w-[90vw]">{settings.promoBannerText}</span>
+        </div>
+      )}
+
       {/* Fixed Luxury Header Navigation */}
       <Header
         onOpenOrderModal={handleOpenOrderModal}

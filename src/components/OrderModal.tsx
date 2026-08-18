@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { ProductVariant, YellofContact, DEFAULT_YELLOF_PRODUCTS, DEFAULT_YELLOF_CONTACT } from "@/data/products";
+import { addStoredOrder, Order } from "@/data/orders";
 import { X, ShoppingBag, Send, CheckCircle2, Coffee, ShieldCheck } from "lucide-react";
 import confetti from "canvas-confetti";
 
@@ -84,6 +85,39 @@ Mohon diproses pesanannya ya kak. Terima kasih!`;
     const waLink = `https://wa.me/${contactData.whatsapp}?text=${encodeURIComponent(
       textMessage
     )}`;
+
+    // Auto-record order to admin dashboard
+    try {
+      const orderId = `ORD-${new Date().toISOString().slice(0, 10).replace(/-/g, "")}-${Math.floor(1000 + Math.random() * 9000)}`;
+      const newOrder: Order = {
+        id: orderId,
+        customerName: customerName.trim(),
+        customerPhone: customerPhone.trim(),
+        customerAddress: address.trim(),
+        notes: notes.trim() || undefined,
+        items: [
+          {
+            productId: currentProduct.id,
+            productName: currentProduct.name,
+            weight: currentProduct.weight,
+            weightGram: currentProduct.weightGram || 250,
+            price: currentProduct.price,
+            quantity: quantity,
+            subtotal: subtotal,
+            grindType: grindType,
+          },
+        ],
+        totalAmount: subtotal,
+        totalWeightGram: (currentProduct.weightGram || 250) * quantity,
+        status: "pending",
+        paymentMethod: "transfer",
+        createdAt: new Date().toISOString(),
+        source: "website_whatsapp",
+      };
+      addStoredOrder(newOrder);
+    } catch {
+      // ignore storage error if any
+    }
 
     setTimeout(() => {
       window.open(waLink, "_blank");
