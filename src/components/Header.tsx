@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
-import { Coffee, MessageCircle, Menu, X, Truck, Megaphone } from "lucide-react";
+import { Coffee, MessageCircle, Menu, X, Truck, Megaphone, Sparkles, ArrowRight } from "lucide-react";
 import { YellofContact, DEFAULT_YELLOF_CONTACT } from "@/data/products";
 
 interface HeaderProps {
@@ -135,11 +135,40 @@ export const Header: React.FC<HeaderProps> = ({
         </button>
       </div>
 
-      {/* 2. PROMO BANNER (Located cleanly BELOW the Navigation Tab/Menu) */}
+      {/* 2. DYNAMIC ANIMATED PROMO BANNER (Placed cleanly BELOW Navigation Bar) */}
       {promoBanner?.enabled && promoBanner?.text && (
-        <div className="w-full bg-gradient-to-r from-[#FFD034] via-[#FFC72C] to-[#E6AF2E] text-[#0A0807] px-3 py-1 sm:py-1.5 text-center text-[10px] sm:text-xs font-black tracking-wide flex items-center justify-center gap-1.5 sm:gap-2 border-t border-[#0A0807]/20 shadow-md">
-          <Megaphone className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0 animate-bounce" />
-          <span className="truncate max-w-[92vw]">{promoBanner.text}</span>
+        <div
+          onClick={() => onOpenOrderModal()}
+          role="button"
+          tabIndex={0}
+          title="Klik untuk langsung memesan promo kopi!"
+          className="group relative w-full cursor-pointer overflow-hidden bg-gradient-to-r from-[#E6AF2E] via-[#FFD034] via-50% to-[#FFC72C] text-[#0A0807] border-t border-b border-[#0A0807]/25 shadow-lg transition-all duration-300 hover:brightness-105 animate-shimmer animate-promo-glow"
+        >
+          <div className="max-w-7xl mx-auto px-3 sm:px-4 py-1.5 sm:py-2 flex items-center justify-center gap-2 sm:gap-3 text-center">
+            
+            {/* Live Pulsing Badge */}
+            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-[#0A0807] text-[#FFC72C] text-[9px] sm:text-[10px] font-black uppercase tracking-wider shrink-0 shadow-sm">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+              </span>
+              <Sparkles className="w-3 h-3 text-[#FFC72C] animate-spin" style={{ animationDuration: "6s" }} />
+              <span>SPESIAL</span>
+            </div>
+
+            {/* Promo Text Content */}
+            <div className="flex items-center gap-1.5 text-[11px] sm:text-xs font-black tracking-wide truncate max-w-[85vw] sm:max-w-2xl text-[#0A0807]">
+              <Megaphone className="w-3.5 h-3.5 shrink-0 hidden sm:inline-block animate-bounce" />
+              <span className="truncate">{promoBanner.text}</span>
+            </div>
+
+            {/* Click Callout CTA Arrow */}
+            <div className="hidden md:inline-flex items-center gap-1 text-[10px] font-black bg-[#0A0807]/15 hover:bg-[#0A0807]/25 px-2 py-0.5 rounded-full transition-colors shrink-0">
+              <span>Order Sekarang</span>
+              <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+            </div>
+
+          </div>
         </div>
       )}
 

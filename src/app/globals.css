@@ -188,3 +188,48 @@ input[type="number"]::-webkit-outer-spin-button {
 .animate-toast {
   animation: toastSlideIn 0.3s ease-out;
 }
+
+/* Promo Banner Light Sweep & Attention Shimmer */
+@keyframes shimmerSweep {
+  0% {
+    transform: translateX(-150%) skewX(-25deg);
+  }
+  40%, 100% {
+    transform: translateX(250%) skewX(-25deg);
+  }
+}
+
+.animate-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.animate-shimmer::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.45) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  animation: shimmerSweep 3.5s infinite cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+}
+
+@keyframes pulseGoldGlow {
+  0%, 100% {
+    box-shadow: 0 4px 15px rgba(255, 199, 44, 0.25);
+  }
+  50% {
+    box-shadow: 0 4px 28px rgba(255, 199, 44, 0.65), 0 0 10px rgba(255, 255, 255, 0.4);
+  }
+}
+
+.animate-promo-glow {
+  animation: pulseGoldGlow 2.5s infinite ease-in-out;
+}
