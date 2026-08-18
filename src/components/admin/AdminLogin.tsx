@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
-import { Lock, Eye, EyeOff, Coffee, ShieldCheck } from "lucide-react";
+import Image from "next/image";
+import { Lock, Eye, EyeOff, ArrowRight, ShieldCheck } from "lucide-react";
 import { getAdminPassword } from "@/data/products";
 
 interface AdminLoginProps {
@@ -29,9 +30,9 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
       } else {
         setError("Password salah! Silakan coba lagi.");
         setPassword("");
+        setIsLoading(false);
       }
-      setIsLoading(false);
-    }, 500);
+    }, 400);
   };
 
   return (
@@ -40,15 +41,22 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
         
         {/* Logo / Brand */}
         <div className="text-center space-y-3">
-          <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto rounded-2xl bg-gradient-to-br from-[#FFD034] via-[#FFC72C] to-[#E6AF2E] flex items-center justify-center shadow-[0_0_40px_rgba(255,199,44,0.3)]">
-            <Coffee className="w-8 h-8 sm:w-10 sm:h-10 text-[#0A0807]" />
+          <div className="flex justify-center">
+            <Image
+              src="/images/yellof_logo.png"
+              alt="Yellof Coffee Official Logo"
+              width={200}
+              height={70}
+              className="h-14 sm:h-16 w-auto object-contain drop-shadow-xl"
+              priority
+            />
           </div>
           <div>
-            <h1 className="font-serif text-2xl sm:text-3xl font-black text-white">
-              YELLOF <span className="text-[#FFC72C]">ADMIN</span>
+            <h1 className="font-serif text-xl sm:text-2xl font-black text-white">
+              ADMIN <span className="text-[#FFC72C]">CONTROL PANEL</span>
             </h1>
-            <p className="text-xs sm:text-sm text-[#A39688] mt-1">
-              Panel Kontrol Harga & Produk
+            <p className="text-xs text-[#A39688] mt-0.5">
+              Panel Pengaturan Produk, Penjualan & Media
             </p>
           </div>
         </div>

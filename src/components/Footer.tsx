@@ -62,10 +62,10 @@ export const Footer: React.FC<FooterProps> = ({ contact }) => {
           <div className="sm:col-span-2 md:col-span-5 space-y-3 sm:space-y-4">
             <div className="flex items-center gap-2">
               <Image
-                src="/images/yellof_logo.jpg"
+                src="/images/yellof_logo.png"
                 alt="Yellof Coffee Official Logo"
-                width={220}
-                height={75}
+                width={240}
+                height={85}
                 className="h-12 sm:h-16 md:h-20 w-auto object-contain"
               />
             </div>

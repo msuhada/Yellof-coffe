@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
+import Image from "next/image";
 import { AdminLogin } from "@/components/admin/AdminLogin";
 import { AdminSalesDashboard } from "@/components/admin/AdminSalesDashboard";
 import { AdminProductMaster } from "@/components/admin/AdminProductMaster";
@@ -130,18 +131,22 @@ export default function AdminPage() {
         <div className="max-w-6xl mx-auto px-3 sm:px-4 md:px-6 py-3 sm:py-4 flex items-center justify-between">
           
           <div className="flex items-center gap-2.5 sm:gap-3">
-            <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-gradient-to-br from-[#FFD034] via-[#FFC72C] to-[#E6AF2E] flex items-center justify-center shadow-md shadow-[#FFC72C]/20">
-              <Coffee className="w-5 h-5 sm:w-6 sm:h-6 text-[#0A0807]" />
-            </div>
-            <div>
-              <h1 className="text-sm sm:text-base font-black text-white flex items-center gap-1.5">
-                <LayoutDashboard className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#FFC72C]" />
+            <Image
+              src="/images/yellof_logo.png"
+              alt="Yellof Coffee Logo"
+              width={140}
+              height={45}
+              className="h-8 sm:h-9 w-auto object-contain"
+              priority
+            />
+            <div className="border-l border-[#2A211B] pl-2.5 sm:pl-3">
+              <h1 className="text-xs sm:text-sm font-black text-white flex items-center gap-1.5">
                 ADMIN PANEL
                 <span className="hidden sm:inline-block text-[9px] px-2 py-0.5 rounded-full bg-[#FFC72C]/15 border border-[#FFC72C]/30 text-[#FFC72C] font-extrabold uppercase ml-1">
                   PRO
                 </span>
               </h1>
-              <p className="text-[9px] sm:text-[10px] text-[#A39688]">
+              <p className="text-[8px] sm:text-[9px] text-[#A39688]">
                 {settings.storeName || "Yellof Coffee Pasaman"}
               </p>
             </div>

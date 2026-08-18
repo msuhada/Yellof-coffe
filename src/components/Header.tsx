@@ -79,10 +79,10 @@ export const Header: React.FC<HeaderProps> = ({
         {/* Official Yellof Coffee Logo Image */}
         <a href="#beranda" className="flex items-center group shrink-0">
           <Image
-            src="/images/yellof_logo.jpg"
+            src="/images/yellof_logo.png"
             alt="Yellof Coffee Official Logo"
-            width={200}
-            height={70}
+            width={220}
+            height={80}
             className="h-10 sm:h-12 md:h-14 lg:h-16 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
             priority
           />

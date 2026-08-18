@@ -673,11 +673,13 @@ export const AdminSalesDashboard: React.FC<AdminSalesDashboardProps> = ({
             <div id="printable-invoice" className="p-5 sm:p-6 space-y-4 overflow-y-auto bg-[#0A0807] text-[#F5EFE6]">
               
               {/* Brand Header */}
-              <div className="text-center border-b border-[#2A211B] pb-4 space-y-1">
-                <div className="inline-block px-2.5 py-0.5 rounded bg-[#FFC72C] text-[#0A0807] text-[10px] font-black uppercase tracking-widest">
-                  YELLOF COFFEE
-                </div>
-                <h2 className="font-serif text-lg font-bold text-white">Kopi Robusta Pasaman</h2>
+              <div className="text-center border-b border-[#2A211B] pb-4 space-y-1.5 flex flex-col items-center">
+                <img
+                  src="/images/yellof_logo.png"
+                  alt="Yellof Coffee Logo"
+                  className="h-10 w-auto object-contain mx-auto"
+                />
+                <h2 className="font-serif text-sm font-bold text-white uppercase tracking-wider">Kopi Robusta Pasaman</h2>
                 <p className="text-[10px] text-[#A39688]">Kabupaten Pasaman, Sumatera Barat | 0821 7103 2691</p>
                 <div className="text-[11px] font-mono text-[#FFC72C] font-bold pt-1">
                   INVOICE: {selectedOrderForInvoice.id}

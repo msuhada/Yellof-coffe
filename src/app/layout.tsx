@@ -20,9 +20,9 @@ export const metadata: Metadata = {
   keywords: ["Yellof Coffee", "Kopi Robusta Pasaman", "Kopi Asli Nagari", "Kopi Robusta Premium", "Kopi Sumatera Barat", "Biji Kopi Murni"],
   authors: [{ name: "Yellof Coffee Pasaman" }],
   icons: {
-    icon: "/images/yellof_logo.jpg",
-    shortcut: "/images/yellof_logo.jpg",
-    apple: "/images/yellof_logo.jpg",
+    icon: "/images/yellof_logo.png",
+    shortcut: "/images/yellof_logo.png",
+    apple: "/images/yellof_logo.png",
   },
   openGraph: {
     title: "Yellof Coffee | Kopi Robusta Premium Asli Pasaman",
