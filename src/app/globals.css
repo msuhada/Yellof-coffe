@@ -233,3 +233,26 @@ input[type="number"]::-webkit-outer-spin-button {
 .animate-promo-glow {
   animation: pulseGoldGlow 2.5s infinite ease-in-out;
 }
+
+/* Infinite Smooth Marquee Ticker */
+@keyframes marqueeScroll {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee {
+  display: inline-flex;
+  width: max-content;
+  will-change: transform;
+  animation: marqueeScroll 25s linear infinite;
+}
+
+.animate-marquee:hover,
+.group:hover .animate-marquee {
+  animation-play-state: paused;
+}
+

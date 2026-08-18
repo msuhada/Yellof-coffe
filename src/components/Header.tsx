@@ -135,40 +135,79 @@ export const Header: React.FC<HeaderProps> = ({
         </button>
       </div>
 
-      {/* 2. DYNAMIC ANIMATED PROMO BANNER (Placed cleanly BELOW Navigation Bar) */}
+      {/* 2. DYNAMIC CONTINUOUS MARQUEE PROMO BANNER */}
       {promoBanner?.enabled && promoBanner?.text && (
         <div
           onClick={() => onOpenOrderModal()}
           role="button"
           tabIndex={0}
-          title="Klik untuk langsung memesan promo kopi!"
-          className="group relative w-full cursor-pointer overflow-hidden bg-gradient-to-r from-[#E6AF2E] via-[#FFD034] via-50% to-[#FFC72C] text-[#0A0807] border-t border-b border-[#0A0807]/25 shadow-lg transition-all duration-300 hover:brightness-105 animate-shimmer animate-promo-glow"
+          title="Klik untuk langsung memesan promo kopi via WhatsApp!"
+          className="group relative w-full cursor-pointer overflow-hidden bg-gradient-to-r from-[#E6AF2E] via-[#FFD034] to-[#FFC72C] text-[#0A0807] border-t border-b border-[#0A0807]/25 shadow-lg transition-all duration-300 hover:brightness-105 animate-shimmer animate-promo-glow flex items-center py-1.5 sm:py-2"
         >
-          <div className="max-w-7xl mx-auto px-3 sm:px-4 py-1.5 sm:py-2 flex items-center justify-center gap-2 sm:gap-3 text-center">
-            
-            {/* Live Pulsing Badge */}
-            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-[#0A0807] text-[#FFC72C] text-[9px] sm:text-[10px] font-black uppercase tracking-wider shrink-0 shadow-sm">
+          {/* Left Pinned Badge with dark gradient shadow */}
+          <div className="relative z-10 pl-3 sm:pl-5 pr-2 sm:pr-3 bg-gradient-to-r from-[#E6AF2E] via-[#E6AF2E] to-transparent flex items-center shrink-0">
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#0A0807] text-[#FFC72C] text-[9px] sm:text-[10px] font-black uppercase tracking-wider shadow-sm">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
               </span>
               <Sparkles className="w-3 h-3 text-[#FFC72C] animate-spin" style={{ animationDuration: "6s" }} />
-              <span>SPESIAL</span>
+              <span>PROMO</span>
             </div>
-
-            {/* Promo Text Content */}
-            <div className="flex items-center gap-1.5 text-[11px] sm:text-xs font-black tracking-wide truncate max-w-[85vw] sm:max-w-2xl text-[#0A0807]">
-              <Megaphone className="w-3.5 h-3.5 shrink-0 hidden sm:inline-block animate-bounce" />
-              <span className="truncate">{promoBanner.text}</span>
-            </div>
-
-            {/* Click Callout CTA Arrow */}
-            <div className="hidden md:inline-flex items-center gap-1 text-[10px] font-black bg-[#0A0807]/15 hover:bg-[#0A0807]/25 px-2 py-0.5 rounded-full transition-colors shrink-0">
-              <span>Order Sekarang</span>
-              <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
-            </div>
-
           </div>
+
+          {/* Marquee Scrolling Text Track */}
+          <div className="overflow-hidden relative flex-1 whitespace-nowrap mask-gradient">
+            <div className="animate-marquee flex items-center gap-10 whitespace-nowrap">
+              
+              {/* Item 1 */}
+              <div className="flex items-center gap-2 text-[11px] sm:text-xs font-black tracking-wide text-[#0A0807]">
+                <Megaphone className="w-3.5 h-3.5 shrink-0 text-[#0A0807] animate-bounce" />
+                <span>{promoBanner.text}</span>
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#0A0807]/15 text-[10px] font-black group-hover:bg-[#0A0807] group-hover:text-[#FFC72C] transition-colors ml-1">
+                  Pesan Sekarang <ArrowRight className="w-2.5 h-2.5" />
+                </span>
+              </div>
+
+              {/* Separator */}
+              <span className="text-xs opacity-60">✦ ☕ ✦</span>
+
+              {/* Item 2 (Duplicate for infinite smooth loop) */}
+              <div className="flex items-center gap-2 text-[11px] sm:text-xs font-black tracking-wide text-[#0A0807]">
+                <Megaphone className="w-3.5 h-3.5 shrink-0 text-[#0A0807] animate-bounce" />
+                <span>{promoBanner.text}</span>
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#0A0807]/15 text-[10px] font-black group-hover:bg-[#0A0807] group-hover:text-[#FFC72C] transition-colors ml-1">
+                  Pesan Sekarang <ArrowRight className="w-2.5 h-2.5" />
+                </span>
+              </div>
+
+              {/* Separator */}
+              <span className="text-xs opacity-60">✦ ☕ ✦</span>
+
+              {/* Item 3 */}
+              <div className="flex items-center gap-2 text-[11px] sm:text-xs font-black tracking-wide text-[#0A0807]">
+                <Megaphone className="w-3.5 h-3.5 shrink-0 text-[#0A0807] animate-bounce" />
+                <span>{promoBanner.text}</span>
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#0A0807]/15 text-[10px] font-black group-hover:bg-[#0A0807] group-hover:text-[#FFC72C] transition-colors ml-1">
+                  Pesan Sekarang <ArrowRight className="w-2.5 h-2.5" />
+                </span>
+              </div>
+
+              {/* Separator */}
+              <span className="text-xs opacity-60">✦ ☕ ✦</span>
+
+              {/* Item 4 */}
+              <div className="flex items-center gap-2 text-[11px] sm:text-xs font-black tracking-wide text-[#0A0807]">
+                <Megaphone className="w-3.5 h-3.5 shrink-0 text-[#0A0807] animate-bounce" />
+                <span>{promoBanner.text}</span>
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#0A0807]/15 text-[10px] font-black group-hover:bg-[#0A0807] group-hover:text-[#FFC72C] transition-colors ml-1">
+                  Pesan Sekarang <ArrowRight className="w-2.5 h-2.5" />
+                </span>
+              </div>
+
+            </div>
+          </div>
+
         </div>
       )}
 
