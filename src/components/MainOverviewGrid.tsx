@@ -96,54 +96,60 @@ export const MainOverviewGrid: React.FC<MainOverviewGridProps> = ({
           </div>
 
           {/* COLUMN 2 (RIGHT): WHATSAPP DIRECT QR & FAST ORDER */}
-          <div className="lg:col-span-4 rounded-xl sm:rounded-2xl bg-gradient-to-b from-[#1A1412] via-[#14100E] to-[#0D0A08] border border-[#FFC72C]/40 p-4 sm:p-6 md:p-8 flex flex-col justify-between shadow-2xl space-y-4">
+          <div className="lg:col-span-4 rounded-xl sm:rounded-2xl bg-gradient-to-b from-[#1A1412] via-[#14100E] to-[#0D0A08] border border-[#FFC72C]/40 p-3.5 sm:p-5 md:p-7 flex flex-col justify-between shadow-2xl space-y-3 sm:space-y-4">
             
-            <div className="space-y-2 text-left">
-              <div className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-full bg-[#FFC72C]/10 border border-[#FFC72C]/30 text-[#FFC72C] text-[9px] sm:text-[10px] font-bold uppercase tracking-wider">
-                <MessageSquare className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                WHATSAPP FAST ORDER
+            {/* Top Area: On mobile side-by-side (QR Left, Text Right), on desktop stacked */}
+            <div className="flex flex-row lg:flex-col items-center lg:items-stretch gap-3 sm:gap-4">
+              
+              {/* QR Code Container (Left on mobile, Center on desktop) */}
+              <div className="flex flex-col items-center justify-center p-2 sm:p-3 rounded-xl bg-white/95 border-2 border-[#FFC72C] shadow-[0_0_20px_rgba(255,199,44,0.2)] shrink-0">
+                <Image
+                  src={qrCodeUrl}
+                  alt="QR Code WhatsApp Yellof Coffee"
+                  width={110}
+                  height={110}
+                  className="w-16 h-16 sm:w-24 sm:h-24 md:w-28 md:h-28 object-contain"
+                  unoptimized
+                />
+                <span className="text-[7px] sm:text-[9px] text-[#0A0807] font-extrabold uppercase tracking-tight mt-1 text-center">
+                  SCAN DENGAN HP
+                </span>
               </div>
-              <h3 className="font-serif text-lg sm:text-xl font-black text-white leading-snug">
-                Pesan Cepat Kopi <br />
-                <span className="text-[#FFC72C]">Asli Kabupaten Pasaman</span>
-              </h3>
-              <p className="text-[10px] sm:text-xs text-[#A39688]">
-                Scan QR atau klik tombol di bawah untuk terhubung langsung ke WhatsApp kami:
-              </p>
+
+              {/* Text Info (Right on mobile, Top on desktop) */}
+              <div className="space-y-1 sm:space-y-1.5 text-left flex-1 min-w-0">
+                <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#FFC72C]/10 border border-[#FFC72C]/30 text-[#FFC72C] text-[8px] sm:text-[10px] font-bold uppercase tracking-wider">
+                  <MessageSquare className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                  WHATSAPP FAST ORDER
+                </div>
+                <h3 className="font-serif text-sm sm:text-base md:text-xl font-black text-white leading-snug">
+                  Pesan Cepat Kopi <br className="hidden sm:inline" />
+                  <span className="text-[#FFC72C]">Asli Kabupaten Pasaman</span>
+                </h3>
+                <p className="text-[9px] sm:text-xs text-[#A39688] leading-relaxed line-clamp-2 sm:line-clamp-none">
+                  Scan QR atau klik tombol di bawah untuk pesan langsung via WhatsApp / Ojek Online:
+                </p>
+              </div>
+
             </div>
 
-            {/* QR Code Container */}
-            <div className="flex flex-col items-center justify-center p-3 sm:p-4 rounded-xl bg-white/95 border-2 border-[#FFC72C] shadow-[0_0_25px_rgba(255,199,44,0.2)] my-1">
-              <Image
-                src={qrCodeUrl}
-                alt="QR Code WhatsApp Yellof Coffee"
-                width={120}
-                height={120}
-                className="w-24 h-24 sm:w-28 sm:h-28 object-contain"
-                unoptimized
-              />
-              <span className="text-[9px] sm:text-[10px] text-[#0A0807] font-extrabold uppercase tracking-wider mt-1.5">
-                SCAN DENGAN HP ANDA
-              </span>
-            </div>
-
-            {/* Action Buttons */}
-            <div className="space-y-2 pt-1">
+            {/* Action Buttons: 2 Columns Side-by-Side (Berdampingan) */}
+            <div className="grid grid-cols-2 gap-2 pt-1">
               <button
                 type="button"
                 onClick={() => onOpenOrderModal()}
-                className="w-full py-2.5 sm:py-3 rounded-xl bg-gradient-to-r from-[#FFD034] via-[#FFC72C] to-[#E6AF2E] text-[#0A0807] font-black text-xs uppercase tracking-wide flex items-center justify-center gap-2 shadow-md hover:scale-[1.02] transition-transform"
+                className="w-full py-2.5 sm:py-3 rounded-xl bg-gradient-to-r from-[#FFD034] via-[#FFC72C] to-[#E6AF2E] text-[#0A0807] font-black text-[10px] sm:text-xs uppercase tracking-tight flex items-center justify-center gap-1.5 shadow-md hover:scale-[1.02] active:scale-95 transition-all truncate"
               >
-                <MessageSquare className="w-4 h-4 fill-[#0A0807]" />
-                CHAT ADMIN WA
+                <MessageSquare className="w-3.5 h-3.5 fill-[#0A0807] shrink-0" />
+                <span className="truncate">CHAT ADMIN WA</span>
               </button>
 
               <button
                 type="button"
                 onClick={onOpenDeliveryModal}
-                className="w-full py-2 sm:py-2.5 rounded-xl bg-[#0A0807] border border-[#FFC72C]/40 text-[#FFC72C] hover:bg-[#FFC72C] hover:text-[#0A0807] text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all"
+                className="w-full py-2.5 sm:py-3 rounded-xl bg-[#0A0807] border border-[#FFC72C]/50 text-[#FFC72C] hover:bg-[#FFC72C] hover:text-[#0A0807] text-[10px] sm:text-[11px] font-extrabold uppercase tracking-tight flex items-center justify-center gap-1 shadow-sm hover:scale-[1.02] active:scale-95 transition-all truncate"
               >
-                <span>PESAN VIA OJEK ONLINE 🛵</span>
+                <span className="truncate">OJEK ONLINE 🛵</span>
               </button>
             </div>
 
