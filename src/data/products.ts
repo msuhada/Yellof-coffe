@@ -15,6 +15,7 @@ export interface YellofContact {
   whatsapp: string;
   whatsappFormatted: string;
   instagram: string;
+  tiktok?: string;
   address: string;
   tagline: string;
 }
@@ -91,6 +92,7 @@ export const DEFAULT_YELLOF_CONTACT: YellofContact = {
   whatsapp: "6282171032691",
   whatsappFormatted: "0821 7103 2691",
   instagram: "@uni.yellof",
+  tiktok: "@Uni.yellof",
   address: "Kabupaten Pasaman, Sumatera Barat, Indonesia",
   tagline: "Nikmatnya Kopi Berkualitas, Semangat Berlipat!"
 };
@@ -137,7 +139,13 @@ export function getStoredContact(): YellofContact {
     const stored = localStorage.getItem(CONTACT_STORAGE_KEY);
     if (stored) {
       const parsed = JSON.parse(stored) as YellofContact;
-      if (parsed && parsed.whatsapp) return parsed;
+      if (parsed && parsed.whatsapp) {
+        return {
+          ...DEFAULT_YELLOF_CONTACT,
+          ...parsed,
+          tiktok: parsed.tiktok || DEFAULT_YELLOF_CONTACT.tiktok,
+        };
+      }
     }
   } catch {
     // ignore parse errors
