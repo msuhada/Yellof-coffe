@@ -43,8 +43,8 @@ export const WhatsAppSection: React.FC<WhatsAppSectionProps> = ({ onOpenOrderMod
                   <MessageSquare className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                   LAYANAN PELANGGAN 24/7
                 </span>
-                <h3 className="font-serif text-lg sm:text-2xl md:text-3xl font-extrabold text-white">
-                  PESAN SEKARANG ! <br />
+                <h3 className="font-serif text-lg sm:text-2xl md:text-3xl font-extrabold text-white leading-tight">
+                  PESAN SEKARANG! <br />
                   <span className="text-gold-gradient">LEWAT WHATSAPP</span>
                 </h3>
                 <p className="text-[10px] sm:text-xs md:text-sm text-[#D1C7BD]">
