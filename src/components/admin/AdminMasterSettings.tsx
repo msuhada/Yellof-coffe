@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
-import { StoreSettings } from "@/data/storeSettings";
+import Image from "next/image";
+import { StoreSettings, GalleryPhotoItem, KeunggulanCardItem, DEFAULT_STORE_SETTINGS } from "@/data/storeSettings";
 import { ProductVariant, YellofContact } from "@/data/products";
 import { Order } from "@/data/orders";
 import {
@@ -18,7 +19,14 @@ import {
   RotateCcw,
   CheckCircle2,
   Sparkles,
-  ShieldAlert,
+  Image as ImageIcon,
+  Layers,
+  Award,
+  FileText,
+  Eye,
+  Check,
+  X,
+  MapPin,
 } from "lucide-react";
 
 interface AdminMasterSettingsProps {
@@ -41,16 +49,39 @@ export const AdminMasterSettings: React.FC<AdminMasterSettingsProps> = ({
   onRestoreAllData,
 }) => {
   const [formData, setFormData] = useState<StoreSettings>(JSON.parse(JSON.stringify(settings)));
+  const [activeSubTab, setActiveSubTab] = useState<"general" | "about" | "gallery" | "keunggulan" | "hero" | "backup">("about");
   const [newGrindOption, setNewGrindOption] = useState("");
   const [isSavedNotice, setIsSavedNotice] = useState(false);
 
-  const handleSave = (e: React.FormEvent) => {
-    e.preventDefault();
+  // Helper for image upload (FileReader to Base64)
+  const handleImageFileUpload = (e: React.ChangeEvent<HTMLInputElement>, onResult: (base64Url: string) => void) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Check size limit (max 4MB)
+    if (file.size > 4 * 1024 * 1024) {
+      alert("⚠️ Ukuran foto maksimal 4MB agar performa website tetap cepat.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const result = event.target?.result as string;
+      if (result) {
+        onResult(result);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleSave = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     onSaveSettings(formData);
     setIsSavedNotice(true);
     setTimeout(() => setIsSavedNotice(false), 3000);
   };
 
+  // Grind options handlers
   const handleAddGrind = () => {
     if (!newGrindOption.trim()) return;
     setFormData({
@@ -68,7 +99,83 @@ export const AdminMasterSettings: React.FC<AdminMasterSettingsProps> = ({
     });
   };
 
-  // Full Backup of Website (Products, Orders, Settings, Contact)
+  // About checklist handlers
+  const handleAddAboutFeature = () => {
+    setFormData({
+      ...formData,
+      about: {
+        ...formData.about,
+        features: [...formData.about.features, "Keunggulan baru"],
+      },
+    });
+  };
+
+  const handleUpdateAboutFeature = (index: number, val: string) => {
+    const updated = [...formData.about.features];
+    updated[index] = val;
+    setFormData({
+      ...formData,
+      about: { ...formData.about, features: updated },
+    });
+  };
+
+  const handleRemoveAboutFeature = (index: number) => {
+    const updated = formData.about.features.filter((_, i) => i !== index);
+    setFormData({
+      ...formData,
+      about: { ...formData.about, features: updated },
+    });
+  };
+
+  // Gallery handlers
+  const handleUpdateGalleryPhoto = (index: number, field: keyof GalleryPhotoItem, value: string) => {
+    const updated = [...formData.gallery];
+    updated[index] = { ...updated[index], [field]: value };
+    setFormData({
+      ...formData,
+      gallery: updated,
+    });
+  };
+
+  // Keunggulan card handlers
+  const handleUpdateKeunggulanCard = (index: number, field: keyof KeunggulanCardItem, value: string) => {
+    const updated = [...formData.keunggulan.cards];
+    updated[index] = { ...updated[index], [field]: value };
+    setFormData({
+      ...formData,
+      keunggulan: { ...formData.keunggulan, cards: updated },
+    });
+  };
+
+  // Keunggulan checklist handlers
+  const handleAddKeunggulanChecklist = () => {
+    setFormData({
+      ...formData,
+      keunggulan: {
+        ...formData.keunggulan,
+        checklist: [...formData.keunggulan.checklist, "Poin mutu baru"],
+      },
+    });
+  };
+
+  const handleUpdateKeunggulanChecklist = (index: number, val: string) => {
+    const updated = [...formData.keunggulan.checklist];
+    updated[index] = val;
+    setFormData({
+      ...formData,
+      keunggulan: { ...formData.keunggulan, checklist: updated },
+    });
+  };
+
+  const handleRemoveKeunggulanChecklist = (index: number) => {
+    const updated = formData.keunggulan.checklist.filter((_, i) => i !== index);
+    setFormData({
+      ...formData,
+      keunggulan: { ...formData.keunggulan, checklist: updated },
+    });
+  };
+
+  // Full Backup
   const handleExportFullBackup = () => {
     const backupData = {
       backupDate: new Date().toISOString(),
@@ -82,13 +189,13 @@ export const AdminMasterSettings: React.FC<AdminMasterSettingsProps> = ({
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupData, null, 2));
     const downloadAnchor = document.createElement("a");
     downloadAnchor.setAttribute("href", dataStr);
-    downloadAnchor.setAttribute("download", `yellof_coffee_full_backup_${new Date().toISOString().split("T")[0]}.json`);
+    downloadAnchor.setAttribute("download", `yellof_full_backup_${new Date().toISOString().split("T")[0]}.json`);
     document.body.appendChild(downloadAnchor);
     downloadAnchor.click();
     downloadAnchor.remove();
   };
 
-  // Restore Full Backup
+  // Full Restore
   const handleImportFullBackup = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -98,15 +205,15 @@ export const AdminMasterSettings: React.FC<AdminMasterSettingsProps> = ({
       try {
         const parsed = JSON.parse(event.target?.result as string);
         if (parsed && (parsed.products || parsed.orders || parsed.settings || parsed.contact)) {
-          if (confirm("Yakin ingin memulihkan seluruh data (produk, pesanan, & pengaturan) dari file backup ini?")) {
+          if (confirm("Yakin ingin memulihkan seluruh data dan pengaturan dari file backup ini?")) {
             onRestoreAllData(parsed);
             if (parsed.settings) {
               setFormData(parsed.settings);
             }
-            alert("✅ Seluruh data berhasil dipulihkan dari backup!");
+            alert("✅ Seluruh data & gambar berhasil dipulihkan dari backup!");
           }
         } else {
-          alert("❌ File backup JSON tidak valid atau format tidak sesuai.");
+          alert("❌ File backup JSON tidak valid.");
         }
       } catch {
         alert("❌ Gagal membaca file backup JSON.");
@@ -115,241 +222,837 @@ export const AdminMasterSettings: React.FC<AdminMasterSettingsProps> = ({
     reader.readAsText(file);
   };
 
+  // Subtabs configuration
+  const subTabs = [
+    { id: "about" as const, label: "🖼️ Tentang Kami", desc: "Foto Perkebunan & Kisah" },
+    { id: "gallery" as const, label: "📸 Galeri Foto Kopi", desc: "4 Kartu Foto Produk" },
+    { id: "keunggulan" as const, label: "⭐ Keunggulan", desc: "Foto Buah Kopi & 4 Kartu" },
+    { id: "hero" as const, label: "🌟 Hero Banner", desc: "Headline & Gambar Utama" },
+    { id: "general" as const, label: "🏪 Toko & Promo", desc: "Banner Marquee & Status" },
+    { id: "backup" as const, label: "💾 Backup Data", desc: "Ekspor / Impor JSON" },
+  ];
+
   return (
     <div className="space-y-6 sm:space-y-8 animate-fadeIn">
       
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 sm:p-5 rounded-2xl bg-[#120E0C] border border-[#DAA520]/25">
+      {/* 1. Header with Save button */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 sm:p-5 rounded-2xl bg-[#120E0C] border border-[#DAA520]/25">
         <div>
           <div className="flex items-center gap-2">
             <Settings className="w-5 h-5 text-[#FFC72C]" />
-            <h2 className="text-base sm:text-lg font-bold text-white">Master Setting & Operasional Toko</h2>
+            <h2 className="text-base sm:text-lg font-bold text-white">Master Setting & Kustomisasi Media</h2>
           </div>
           <p className="text-[11px] sm:text-xs text-[#A39688] mt-0.5">
-            Konfigurasi banner promo, opsi gilingan, status toko, dan backup seluruh data.
+            Ganti foto perkebunan, galeri produk, gambar keunggulan, teks narasi, banner promo, dan status toko.
           </p>
         </div>
 
-        {isSavedNotice && (
-          <div className="px-3 py-1.5 rounded-lg bg-emerald-950/60 border border-emerald-500/40 text-emerald-400 text-xs font-bold flex items-center gap-1.5 animate-fadeIn">
-            <CheckCircle2 className="w-4 h-4" /> Pengaturan Tersimpan!
-          </div>
-        )}
+        <div className="flex items-center gap-2">
+          {isSavedNotice && (
+            <div className="px-3 py-1.5 rounded-xl bg-emerald-950/70 border border-emerald-500/40 text-emerald-400 text-xs font-bold flex items-center gap-1.5 animate-fadeIn">
+              <CheckCircle2 className="w-4 h-4" /> Tersimpan!
+            </div>
+          )}
+          <button
+            onClick={() => handleSave()}
+            className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#FFD034] via-[#FFC72C] to-[#E6AF2E] text-[#0A0807] font-black text-xs flex items-center gap-2 shadow-[0_0_20px_rgba(255,199,44,0.3)] hover:scale-[1.02] transition-transform"
+          >
+            <Save className="w-4 h-4" />
+            Simpan Semua Perubahan
+          </button>
+        </div>
       </div>
 
-      <form onSubmit={handleSave} className="space-y-6">
-        
-        {/* Section 1: Operasional & Status Toko */}
-        <div className="p-4 sm:p-6 rounded-2xl bg-[#120E0C] border border-[#DAA520]/25 space-y-4">
-          <div className="flex items-center gap-2 pb-2 border-b border-[#2A211B]">
-            <Store className="w-4 h-4 text-[#FFC72C]" />
-            <h3 className="text-sm sm:text-base font-bold text-white uppercase tracking-wider">
-              Status Operasional & Nama Toko
-            </h3>
-          </div>
+      {/* 2. Subtab Navigation Bar */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+        {subTabs.map((st) => {
+          const isActive = activeSubTab === st.id;
+          return (
+            <button
+              key={st.id}
+              type="button"
+              onClick={() => setActiveSubTab(st.id)}
+              className={`p-3 rounded-xl border text-left transition-all ${
+                isActive
+                  ? "bg-[#1C1510] border-[#FFC72C] text-[#FFC72C] shadow-[0_0_15px_rgba(255,199,44,0.15)] scale-[1.02]"
+                  : "bg-[#0F0C0A] border-[#2A211B] text-[#A39688] hover:text-white hover:border-[#DAA520]/40"
+              }`}
+            >
+              <div className="text-xs sm:text-sm font-bold truncate">{st.label}</div>
+              <div className="text-[9px] sm:text-[10px] text-[#6B5D4F] truncate mt-0.5">{st.desc}</div>
+            </button>
+          );
+        })}
+      </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-1">
-              <label className="text-[10px] sm:text-xs font-bold text-[#A39688] uppercase tracking-wider block">
-                Nama Brand / Toko:
+      {/* 3. SUBTAB CONTENTS */}
+      <div className="space-y-6">
+        
+        {/* SUBTAB A: TENTANG KAMI */}
+        {activeSubTab === "about" && (
+          <div className="p-4 sm:p-6 rounded-2xl bg-[#120E0C] border border-[#DAA520]/25 space-y-5 animate-fadeIn">
+            <div className="flex items-center justify-between pb-3 border-b border-[#2A211B]">
+              <div className="flex items-center gap-2">
+                <ImageIcon className="w-5 h-5 text-[#FFC72C]" />
+                <h3 className="text-sm sm:text-base font-bold text-white uppercase tracking-wider">
+                  Pengaturan Gambar & Teks: Tentang Kami
+                </h3>
+              </div>
+              <span className="text-[10px] text-[#A39688]">Section Halaman Utama</span>
+            </div>
+
+            {/* Foto Perkebunan */}
+            <div className="p-4 rounded-xl bg-[#0A0807] border border-[#2A211B] space-y-3">
+              <label className="text-xs font-bold text-[#FFC72C] uppercase tracking-wider block">
+                1. Foto Perkebunan Kopi (Tentang Kami):
               </label>
-              <input
-                type="text"
-                value={formData.storeName}
-                onChange={(e) => setFormData({ ...formData, storeName: e.target.value })}
-                className="w-full px-3 py-2 rounded-xl bg-[#0A0807] border border-[#DAA520]/40 text-white text-xs font-semibold focus:outline-none focus:border-[#FFC72C]"
+
+              <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+                {/* Live Image Preview */}
+                <div className="relative w-32 h-24 sm:w-40 sm:h-28 rounded-xl overflow-hidden border-2 border-[#DAA520]/40 shrink-0 bg-[#14100E]">
+                  <Image
+                    src={formData.about.image || "/images/pasaman_plantation.png"}
+                    alt="Preview Tentang Kami"
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+
+                {/* Upload & URL Controls */}
+                <div className="flex-1 space-y-2 w-full">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <label className="px-4 py-2 rounded-xl bg-[#1A1412] hover:bg-[#FFC72C] text-[#FFC72C] hover:text-[#0A0807] border border-[#DAA520]/40 text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-all">
+                      <Upload className="w-3.5 h-3.5" />
+                      Upload Foto Baru dari Perangkat
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => handleImageFileUpload(e, (base64) => setFormData({
+                          ...formData,
+                          about: { ...formData.about, image: base64 }
+                        }))}
+                        className="hidden"
+                      />
+                    </label>
+
+                    <button
+                      type="button"
+                      onClick={() => setFormData({
+                        ...formData,
+                        about: { ...formData.about, image: "/images/pasaman_plantation.png" }
+                      })}
+                      className="px-3 py-2 rounded-xl bg-[#14100E] border border-[#2A211B] text-[#A39688] hover:text-white text-xs"
+                    >
+                      Gunakan Foto Asli Pasaman
+                    </button>
+                  </div>
+
+                  <div className="space-y-1 pt-1">
+                    <span className="text-[10px] text-[#A39688]">Atau masukkan URL gambar:</span>
+                    <input
+                      type="text"
+                      placeholder="https://..."
+                      value={formData.about.image}
+                      onChange={(e) => setFormData({
+                        ...formData,
+                        about: { ...formData.about, image: e.target.value }
+                      })}
+                      className="w-full px-3 py-1.5 rounded-lg bg-[#14100E] border border-[#2A211B] text-white text-xs focus:outline-none focus:border-[#FFC72C]"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Location Badge text */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                <div className="space-y-1">
+                  <label className="text-[10px] sm:text-xs font-bold text-[#A39688] uppercase block">
+                    Teks Label Lokasi:
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.about.locationTitle}
+                    onChange={(e) => setFormData({
+                      ...formData,
+                      about: { ...formData.about, locationTitle: e.target.value }
+                    })}
+                    className="w-full px-3 py-2 rounded-lg bg-[#14100E] border border-[#2A211B] text-white text-xs focus:outline-none focus:border-[#FFC72C]"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] sm:text-xs font-bold text-[#A39688] uppercase block">
+                    Keterangan Ketinggian Lahan:
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.about.locationSubtitle}
+                    onChange={(e) => setFormData({
+                      ...formData,
+                      about: { ...formData.about, locationSubtitle: e.target.value }
+                    })}
+                    className="w-full px-3 py-2 rounded-lg bg-[#14100E] border border-[#2A211B] text-white text-xs focus:outline-none focus:border-[#FFC72C]"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Teks Narasi Tentang Kami */}
+            <div className="p-4 rounded-xl bg-[#0A0807] border border-[#2A211B] space-y-3">
+              <label className="text-xs font-bold text-[#FFC72C] uppercase tracking-wider block">
+                2. Judul & Narasi Cerita Kopi:
+              </label>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="space-y-1">
+                  <label className="text-[10px] text-[#A39688] uppercase block">Badge Atas:</label>
+                  <input
+                    type="text"
+                    value={formData.about.badge}
+                    onChange={(e) => setFormData({
+                      ...formData,
+                      about: { ...formData.about, badge: e.target.value }
+                    })}
+                    className="w-full px-3 py-2 rounded-lg bg-[#14100E] border border-[#2A211B] text-white text-xs focus:outline-none focus:border-[#FFC72C]"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] text-[#A39688] uppercase block">Judul Baris 1:</label>
+                  <input
+                    type="text"
+                    value={formData.about.title}
+                    onChange={(e) => setFormData({
+                      ...formData,
+                      about: { ...formData.about, title: e.target.value }
+                    })}
+                    className="w-full px-3 py-2 rounded-lg bg-[#14100E] border border-[#2A211B] text-white text-xs focus:outline-none focus:border-[#FFC72C]"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] text-[#A39688] uppercase block">Highlight Emas (Baris 2):</label>
+                  <input
+                    type="text"
+                    value={formData.about.titleHighlight}
+                    onChange={(e) => setFormData({
+                      ...formData,
+                      about: { ...formData.about, titleHighlight: e.target.value }
+                    })}
+                    className="w-full px-3 py-2 rounded-lg bg-[#14100E] border border-[#2A211B] text-[#FFC72C] font-bold text-xs focus:outline-none focus:border-[#FFC72C]"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] text-[#A39688] uppercase block">Paragraf Pembuka:</label>
+                <textarea
+                  rows={2}
+                  value={formData.about.description1}
+                  onChange={(e) => setFormData({
+                    ...formData,
+                    about: { ...formData.about, description1: e.target.value }
+                  })}
+                  className="w-full px-3 py-2 rounded-lg bg-[#14100E] border border-[#2A211B] text-white text-xs focus:outline-none focus:border-[#FFC72C]"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] text-[#A39688] uppercase block">Paragraf Detail Kualitas:</label>
+                <textarea
+                  rows={2}
+                  value={formData.about.description2}
+                  onChange={(e) => setFormData({
+                    ...formData,
+                    about: { ...formData.about, description2: e.target.value }
+                  })}
+                  className="w-full px-3 py-2 rounded-lg bg-[#14100E] border border-[#2A211B] text-white text-xs focus:outline-none focus:border-[#FFC72C]"
+                />
+              </div>
+            </div>
+
+            {/* Checklist Keunggulan Poin Tentang Kami */}
+            <div className="p-4 rounded-xl bg-[#0A0807] border border-[#2A211B] space-y-3">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold text-[#FFC72C] uppercase tracking-wider block">
+                  3. Poin Keunggulan Checklist Tentang Kami:
+                </label>
+                <button
+                  type="button"
+                  onClick={handleAddAboutFeature}
+                  className="px-3 py-1 rounded-lg bg-[#1A1412] hover:bg-[#FFC72C] text-[#FFC72C] hover:text-[#0A0807] border border-[#DAA520]/30 text-[10px] font-bold flex items-center gap-1 transition-all"
+                >
+                  <Plus className="w-3 h-3" /> Tambah Poin
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {formData.about.features.map((feat, idx) => (
+                  <div key={idx} className="flex items-center gap-2">
+                    <span className="text-xs text-[#A39688] font-bold w-4">{idx + 1}.</span>
+                    <input
+                      type="text"
+                      value={feat}
+                      onChange={(e) => handleUpdateAboutFeature(idx, e.target.value)}
+                      className="flex-1 px-3 py-1.5 rounded-lg bg-[#14100E] border border-[#2A211B] text-white text-xs focus:outline-none focus:border-[#FFC72C]"
+                    />
+                    {formData.about.features.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveAboutFeature(idx)}
+                        className="p-1.5 rounded-lg text-red-400 hover:bg-red-950/40"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* SUBTAB B: GALERI FOTO KOPI (4 FOTO) */}
+        {activeSubTab === "gallery" && (
+          <div className="p-4 sm:p-6 rounded-2xl bg-[#120E0C] border border-[#DAA520]/25 space-y-5 animate-fadeIn">
+            <div className="flex items-center justify-between pb-3 border-b border-[#2A211B]">
+              <div className="flex items-center gap-2">
+                <ImageIcon className="w-5 h-5 text-[#FFC72C]" />
+                <h3 className="text-sm sm:text-base font-bold text-white uppercase tracking-wider">
+                  Pengaturan 4 Foto Galeri Seri Kopi Pasaman
+                </h3>
+              </div>
+              <span className="text-[10px] text-[#A39688]">Tampil di Samping Form Order</span>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {formData.gallery.map((photo, idx) => (
+                <div key={photo.id || idx} className="p-4 rounded-xl bg-[#0A0807] border border-[#2A211B] space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-[#FFC72C] uppercase">
+                      Kartu Foto #{idx + 1}
+                    </span>
+                  </div>
+
+                  {/* Thumbnail & Upload */}
+                  <div className="flex items-center gap-3">
+                    <div className="relative w-24 h-20 rounded-xl overflow-hidden border border-[#DAA520]/30 shrink-0 bg-[#14100E]">
+                      <Image
+                        src={photo.src || "/images/grid_1_hot_ceramic.jpg"}
+                        alt={photo.title}
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+
+                    <div className="space-y-1.5 flex-1">
+                      <label className="px-3 py-1.5 rounded-lg bg-[#1A1412] hover:bg-[#FFC72C] text-[#FFC72C] hover:text-[#0A0807] border border-[#DAA520]/40 text-[11px] font-bold inline-flex items-center gap-1.5 cursor-pointer transition-all">
+                        <Upload className="w-3 h-3" />
+                        Ganti Foto
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => handleImageFileUpload(e, (base64) => handleUpdateGalleryPhoto(idx, "src", base64))}
+                          className="hidden"
+                        />
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="Atau masukkan URL gambar..."
+                        value={photo.src}
+                        onChange={(e) => handleUpdateGalleryPhoto(idx, "src", e.target.value)}
+                        className="w-full px-2.5 py-1 rounded-lg bg-[#14100E] border border-[#2A211B] text-white text-[10px] focus:outline-none focus:border-[#FFC72C]"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Title & Caption */}
+                  <div className="space-y-2">
+                    <div className="space-y-0.5">
+                      <label className="text-[9px] text-[#A39688] uppercase block">Judul Foto:</label>
+                      <input
+                        type="text"
+                        value={photo.title}
+                        onChange={(e) => handleUpdateGalleryPhoto(idx, "title", e.target.value)}
+                        className="w-full px-3 py-1.5 rounded-lg bg-[#14100E] border border-[#2A211B] text-white text-xs font-bold focus:outline-none focus:border-[#FFC72C]"
+                      />
+                    </div>
+                    <div className="space-y-0.5">
+                      <label className="text-[9px] text-[#A39688] uppercase block">Keterangan / Caption:</label>
+                      <input
+                        type="text"
+                        value={photo.caption}
+                        onChange={(e) => handleUpdateGalleryPhoto(idx, "caption", e.target.value)}
+                        className="w-full px-3 py-1.5 rounded-lg bg-[#14100E] border border-[#2A211B] text-[#D1C7BD] text-xs focus:outline-none focus:border-[#FFC72C]"
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* SUBTAB C: KEUNGGULAN */}
+        {activeSubTab === "keunggulan" && (
+          <div className="p-4 sm:p-6 rounded-2xl bg-[#120E0C] border border-[#DAA520]/25 space-y-5 animate-fadeIn">
+            <div className="flex items-center justify-between pb-3 border-b border-[#2A211B]">
+              <div className="flex items-center gap-2">
+                <Award className="w-5 h-5 text-[#FFC72C]" />
+                <h3 className="text-sm sm:text-base font-bold text-white uppercase tracking-wider">
+                  Pengaturan Gambar & Teks: Keunggulan Kopi
+                </h3>
+              </div>
+              <span className="text-[10px] text-[#A39688]">Section Keunggulan Produk</span>
+            </div>
+
+            {/* Foto Buah Kopi & Quote */}
+            <div className="p-4 rounded-xl bg-[#0A0807] border border-[#2A211B] space-y-3">
+              <label className="text-xs font-bold text-[#FFC72C] uppercase tracking-wider block">
+                1. Foto Buah Kopi Petik Merah:
+              </label>
+
+              <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+                <div className="relative w-28 h-28 rounded-xl overflow-hidden border-2 border-[#DAA520]/40 shrink-0 bg-[#14100E]">
+                  <Image
+                    src={formData.keunggulan.image || "/images/coffee_cherries.png"}
+                    alt="Preview Keunggulan"
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+
+                <div className="flex-1 space-y-2 w-full">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <label className="px-4 py-2 rounded-xl bg-[#1A1412] hover:bg-[#FFC72C] text-[#FFC72C] hover:text-[#0A0807] border border-[#DAA520]/40 text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-all">
+                      <Upload className="w-3.5 h-3.5" />
+                      Upload Foto Buah Kopi Baru
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => handleImageFileUpload(e, (base64) => setFormData({
+                          ...formData,
+                          keunggulan: { ...formData.keunggulan, image: base64 }
+                        }))}
+                        className="hidden"
+                      />
+                    </label>
+
+                    <button
+                      type="button"
+                      onClick={() => setFormData({
+                        ...formData,
+                        keunggulan: { ...formData.keunggulan, image: "/images/coffee_cherries.png" }
+                      })}
+                      className="px-3 py-2 rounded-xl bg-[#14100E] border border-[#2A211B] text-[#A39688] hover:text-white text-xs"
+                    >
+                      Gunakan Foto Asli Default
+                    </button>
+                  </div>
+
+                  <div className="space-y-1">
+                    <span className="text-[10px] text-[#A39688]">Teks Kutipan Pada Foto:</span>
+                    <input
+                      type="text"
+                      value={formData.keunggulan.imageQuote}
+                      onChange={(e) => setFormData({
+                        ...formData,
+                        keunggulan: { ...formData.keunggulan, imageQuote: e.target.value }
+                      })}
+                      className="w-full px-3 py-1.5 rounded-lg bg-[#14100E] border border-[#2A211B] text-white text-xs focus:outline-none focus:border-[#FFC72C]"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* 4 Kartu Keunggulan */}
+            <div className="p-4 rounded-xl bg-[#0A0807] border border-[#2A211B] space-y-3">
+              <label className="text-xs font-bold text-[#FFC72C] uppercase tracking-wider block">
+                2. Konten 4 Kartu Keunggulan Kopi:
+              </label>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {formData.keunggulan.cards.map((card, idx) => (
+                  <div key={card.id || idx} className="p-3 rounded-lg bg-[#14100E] border border-[#2A211B] space-y-2">
+                    <div className="flex items-center gap-2">
+                      <span className="w-5 h-5 rounded-full bg-[#FFC72C] text-[#0A0807] text-[10px] font-black flex items-center justify-center">
+                        {idx + 1}
+                      </span>
+                      <input
+                        type="text"
+                        value={card.title}
+                        onChange={(e) => handleUpdateKeunggulanCard(idx, "title", e.target.value)}
+                        className="flex-1 px-2.5 py-1 rounded bg-[#0A0807] border border-[#2A211B] text-white text-xs font-bold focus:outline-none focus:border-[#FFC72C]"
+                        placeholder="Judul Keunggulan"
+                      />
+                    </div>
+                    <textarea
+                      rows={2}
+                      value={card.desc}
+                      onChange={(e) => handleUpdateKeunggulanCard(idx, "desc", e.target.value)}
+                      className="w-full px-2.5 py-1.5 rounded bg-[#0A0807] border border-[#2A211B] text-[#D1C7BD] text-xs focus:outline-none focus:border-[#FFC72C]"
+                      placeholder="Penjelasan keunggulan..."
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Checklist Ringkasan Mutu */}
+            <div className="p-4 rounded-xl bg-[#0A0807] border border-[#2A211B] space-y-3">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold text-[#FFC72C] uppercase tracking-wider block">
+                  3. Ringkasan Keunggulan Mutu (Checklist Bawah):
+                </label>
+                <button
+                  type="button"
+                  onClick={handleAddKeunggulanChecklist}
+                  className="px-3 py-1 rounded-lg bg-[#1A1412] hover:bg-[#FFC72C] text-[#FFC72C] hover:text-[#0A0807] border border-[#DAA520]/30 text-[10px] font-bold flex items-center gap-1 transition-all"
+                >
+                  <Plus className="w-3 h-3" /> Tambah Poin
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {formData.keunggulan.checklist.map((pt, idx) => (
+                  <div key={idx} className="flex items-center gap-2">
+                    <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                    <input
+                      type="text"
+                      value={pt}
+                      onChange={(e) => handleUpdateKeunggulanChecklist(idx, e.target.value)}
+                      className="flex-1 px-3 py-1.5 rounded-lg bg-[#14100E] border border-[#2A211B] text-white text-xs focus:outline-none focus:border-[#FFC72C]"
+                    />
+                    {formData.keunggulan.checklist.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveKeunggulanChecklist(idx)}
+                        className="p-1.5 rounded-lg text-red-400 hover:bg-red-950/40"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* SUBTAB D: HERO BANNER */}
+        {activeSubTab === "hero" && (
+          <div className="p-4 sm:p-6 rounded-2xl bg-[#120E0C] border border-[#DAA520]/25 space-y-5 animate-fadeIn">
+            <div className="flex items-center justify-between pb-3 border-b border-[#2A211B]">
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-[#FFC72C]" />
+                <h3 className="text-sm sm:text-base font-bold text-white uppercase tracking-wider">
+                  Pengaturan Hero Banner & Headline Utama
+                </h3>
+              </div>
+              <span className="text-[10px] text-[#A39688]">Tampilan Pertama Website</span>
+            </div>
+
+            <div className="p-4 rounded-xl bg-[#0A0807] border border-[#2A211B] space-y-3">
+              <label className="text-xs font-bold text-[#FFC72C] uppercase tracking-wider block">
+                Gambar Latar Belakang (Hero Background):
+              </label>
+
+              <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+                <div className="relative w-36 h-20 rounded-xl overflow-hidden border-2 border-[#DAA520]/40 shrink-0 bg-[#14100E]">
+                  <Image
+                    src={formData.hero.bgImage || "/images/user_provided_bg.jpg"}
+                    alt="Preview Hero Background"
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+
+                <div className="flex-1 space-y-2 w-full">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <label className="px-4 py-2 rounded-xl bg-[#1A1412] hover:bg-[#FFC72C] text-[#FFC72C] hover:text-[#0A0807] border border-[#DAA520]/40 text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-all">
+                      <Upload className="w-3.5 h-3.5" />
+                      Upload Background Baru
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => handleImageFileUpload(e, (base64) => setFormData({
+                          ...formData,
+                          hero: { ...formData.hero, bgImage: base64 }
+                        }))}
+                        className="hidden"
+                      />
+                    </label>
+
+                    <button
+                      type="button"
+                      onClick={() => setFormData({
+                        ...formData,
+                        hero: { ...formData.hero, bgImage: "/images/user_provided_bg.jpg" }
+                      })}
+                      className="px-3 py-2 rounded-xl bg-[#14100E] border border-[#2A211B] text-[#A39688] hover:text-white text-xs"
+                    >
+                      Gunakan Background Asli
+                    </button>
+                  </div>
+
+                  <input
+                    type="text"
+                    placeholder="URL gambar..."
+                    value={formData.hero.bgImage}
+                    onChange={(e) => setFormData({
+                      ...formData,
+                      hero: { ...formData.hero, bgImage: e.target.value }
+                    })}
+                    className="w-full px-3 py-1.5 rounded-lg bg-[#14100E] border border-[#2A211B] text-white text-xs focus:outline-none focus:border-[#FFC72C]"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Headline Texts */}
+            <div className="p-4 rounded-xl bg-[#0A0807] border border-[#2A211B] space-y-3">
+              <label className="text-xs font-bold text-[#FFC72C] uppercase tracking-wider block">
+                Teks Tagline & Headline Hero:
+              </label>
+
+              <div className="space-y-1">
+                <label className="text-[10px] text-[#A39688] uppercase block">Tagline Atas (Huruf Bersambung):</label>
+                <input
+                  type="text"
+                  value={formData.hero.tagline}
+                  onChange={(e) => setFormData({
+                    ...formData,
+                    hero: { ...formData.hero, tagline: e.target.value }
+                  })}
+                  className="w-full px-3 py-2 rounded-lg bg-[#14100E] border border-[#2A211B] text-white text-xs focus:outline-none focus:border-[#FFC72C]"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="space-y-1">
+                  <label className="text-[10px] text-[#A39688] uppercase block">Headline Baris 1:</label>
+                  <input
+                    type="text"
+                    value={formData.hero.headline1}
+                    onChange={(e) => setFormData({
+                      ...formData,
+                      hero: { ...formData.hero, headline1: e.target.value }
+                    })}
+                    className="w-full px-3 py-2 rounded-lg bg-[#14100E] border border-[#2A211B] text-white text-xs font-black focus:outline-none focus:border-[#FFC72C]"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] text-[#A39688] uppercase block">Highlight Emas (Baris 2):</label>
+                  <input
+                    type="text"
+                    value={formData.hero.headlineHighlight}
+                    onChange={(e) => setFormData({
+                      ...formData,
+                      hero: { ...formData.hero, headlineHighlight: e.target.value }
+                    })}
+                    className="w-full px-3 py-2 rounded-lg bg-[#14100E] border border-[#2A211B] text-[#FFC72C] text-xs font-black focus:outline-none focus:border-[#FFC72C]"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] text-[#A39688] uppercase block">Headline Baris 3:</label>
+                  <input
+                    type="text"
+                    value={formData.hero.headline3}
+                    onChange={(e) => setFormData({
+                      ...formData,
+                      hero: { ...formData.hero, headline3: e.target.value }
+                    })}
+                    className="w-full px-3 py-2 rounded-lg bg-[#14100E] border border-[#2A211B] text-[#FFC72C] text-xs font-black focus:outline-none focus:border-[#FFC72C]"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] text-[#A39688] uppercase block">Deskripsi Hero:</label>
+                <textarea
+                  rows={2}
+                  value={formData.hero.description}
+                  onChange={(e) => setFormData({
+                    ...formData,
+                    hero: { ...formData.hero, description: e.target.value }
+                  })}
+                  className="w-full px-3 py-2 rounded-lg bg-[#14100E] border border-[#2A211B] text-white text-xs focus:outline-none focus:border-[#FFC72C]"
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* SUBTAB E: GENERAL & PROMO BANNER */}
+        {activeSubTab === "general" && (
+          <div className="p-4 sm:p-6 rounded-2xl bg-[#120E0C] border border-[#DAA520]/25 space-y-5 animate-fadeIn">
+            <div className="flex items-center justify-between pb-3 border-b border-[#2A211B]">
+              <div className="flex items-center gap-2">
+                <Store className="w-5 h-5 text-[#FFC72C]" />
+                <h3 className="text-sm sm:text-base font-bold text-white uppercase tracking-wider">
+                  Operasional Toko & Banner Marquee
+                </h3>
+              </div>
+            </div>
+
+            {/* Status Toko */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-xl bg-[#0A0807] border border-[#2A211B]">
+              <div className="space-y-1">
+                <label className="text-[10px] sm:text-xs font-bold text-[#A39688] uppercase block">Nama Brand / Toko:</label>
+                <input
+                  type="text"
+                  value={formData.storeName}
+                  onChange={(e) => setFormData({ ...formData, storeName: e.target.value })}
+                  className="w-full px-3 py-2 rounded-lg bg-[#14100E] border border-[#2A211B] text-white text-xs font-bold focus:outline-none focus:border-[#FFC72C]"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] sm:text-xs font-bold text-[#A39688] uppercase block">Status Toko:</label>
+                <select
+                  value={formData.storeStatus}
+                  onChange={(e) => setFormData({ ...formData, storeStatus: e.target.value as "open" | "busy" | "closed" })}
+                  className="w-full px-3 py-2 rounded-lg bg-[#14100E] border border-[#2A211B] text-white text-xs font-bold focus:outline-none focus:border-[#FFC72C]"
+                >
+                  <option value="open">🟢 Toko Buka (Menerima Pesanan)</option>
+                  <option value="busy">🟡 Sedang Roasting Kopi</option>
+                  <option value="closed">🔴 Tutup Sementara / Libur</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Banner Promo Marquee */}
+            <div className="p-4 rounded-xl bg-[#0A0807] border border-[#2A211B] space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Megaphone className="w-4 h-4 text-[#FFC72C]" />
+                  <span className="text-xs font-bold text-white uppercase">Teks Banner Promo Marquee:</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setFormData({ ...formData, enablePromoBanner: !formData.enablePromoBanner })}
+                  className={`px-3 py-1 rounded-full text-[10px] font-black transition-colors ${
+                    formData.enablePromoBanner ? "bg-[#FFC72C] text-[#0A0807]" : "bg-[#2A211B] text-[#A39688]"
+                  }`}
+                >
+                  {formData.enablePromoBanner ? "BANNER AKTIF" : "NONAKTIF"}
+                </button>
+              </div>
+
+              <textarea
+                rows={2}
+                value={formData.promoBannerText}
+                onChange={(e) => setFormData({ ...formData, promoBannerText: e.target.value })}
+                className="w-full px-3 py-2 rounded-lg bg-[#14100E] border border-[#2A211B] text-white text-xs focus:outline-none focus:border-[#FFC72C]"
+                placeholder="Tuliskan promo yang akan bergulir..."
               />
             </div>
 
-            <div className="space-y-1">
-              <label className="text-[10px] sm:text-xs font-bold text-[#A39688] uppercase tracking-wider block">
-                Status Operasional Toko:
-              </label>
-              <select
-                value={formData.storeStatus}
-                onChange={(e) => setFormData({ ...formData, storeStatus: e.target.value as "open" | "busy" | "closed" })}
-                className="w-full px-3 py-2 rounded-xl bg-[#0A0807] border border-[#DAA520]/40 text-white text-xs font-semibold focus:outline-none focus:border-[#FFC72C]"
-              >
-                <option value="open">🟢 Toko Buka (Menerima Pesanan)</option>
-                <option value="busy">🟡 Sibuk / Sedang Roasting Kopi</option>
-                <option value="closed">🔴 Tutup Sementara / Libur</option>
-              </select>
+            {/* Opsi Gilingan */}
+            <div className="p-4 rounded-xl bg-[#0A0807] border border-[#2A211B] space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-[#FFC72C] uppercase">Daftar Opsi Gilingan Kopi:</span>
+              </div>
+
+              <div className="space-y-2">
+                {formData.availableGrindOptions.map((opt, idx) => (
+                  <div key={idx} className="flex items-center justify-between p-2 rounded-lg bg-[#14100E] border border-[#2A211B]">
+                    <span className="text-xs text-white font-semibold">{opt}</span>
+                    {formData.availableGrindOptions.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveGrind(idx)}
+                        className="p-1 text-red-400 hover:bg-red-950/40 rounded"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex items-center gap-2 pt-1">
+                <input
+                  type="text"
+                  placeholder="Tambah opsi gilingan baru..."
+                  value={newGrindOption}
+                  onChange={(e) => setNewGrindOption(e.target.value)}
+                  className="flex-1 px-3 py-1.5 rounded-lg bg-[#14100E] border border-[#2A211B] text-white text-xs focus:outline-none focus:border-[#FFC72C]"
+                />
+                <button
+                  type="button"
+                  onClick={handleAddGrind}
+                  className="px-4 py-1.5 rounded-lg bg-[#1A1412] hover:bg-[#FFC72C] text-[#FFC72C] hover:text-[#0A0807] border border-[#DAA520]/40 text-xs font-bold"
+                >
+                  Tambah
+                </button>
+              </div>
             </div>
           </div>
+        )}
 
-          <div className="space-y-1">
-            <label className="text-[10px] sm:text-xs font-bold text-[#A39688] uppercase tracking-wider block">
-              Catatan Status Operasional:
-            </label>
-            <input
-              type="text"
-              value={formData.statusNotice || ""}
-              onChange={(e) => setFormData({ ...formData, statusNotice: e.target.value })}
-              className="w-full px-3 py-2 rounded-xl bg-[#0A0807] border border-[#DAA520]/40 text-white text-xs focus:outline-none focus:border-[#FFC72C]"
-              placeholder="Contoh: Pengiriman setiap hari kerja sebelum jam 16.00 WIB"
-            />
-          </div>
-        </div>
-
-        {/* Section 2: Promo Banner Global */}
-        <div className="p-4 sm:p-6 rounded-2xl bg-[#120E0C] border border-[#DAA520]/25 space-y-4">
-          <div className="flex items-center justify-between pb-2 border-b border-[#2A211B]">
-            <div className="flex items-center gap-2">
-              <Megaphone className="w-4 h-4 text-[#FFC72C]" />
+        {/* SUBTAB F: BACKUP & RESTORE */}
+        {activeSubTab === "backup" && (
+          <div className="p-4 sm:p-6 rounded-2xl bg-[#120E0C] border border-[#DAA520]/25 space-y-4 animate-fadeIn">
+            <div className="flex items-center gap-2 pb-3 border-b border-[#2A211B]">
+              <Database className="w-5 h-5 text-[#FFC72C]" />
               <h3 className="text-sm sm:text-base font-bold text-white uppercase tracking-wider">
-                Banner Promo / Pengumuman
+                Cadangkan & Pulihkan Seluruh Data Website
               </h3>
             </div>
 
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] sm:text-xs text-[#A39688]">Tampilkan Banner:</span>
+            <p className="text-xs text-[#A39688]">
+              File backup mencakup: <strong>Daftar Produk & Harga</strong>, <strong>Riwayat Penjualan / Pesanan</strong>, <strong>Seluruh Gambar & Teks Kustom</strong>, serta <strong>Kontak WhatsApp</strong>.
+            </p>
+
+            <div className="flex items-center gap-3 flex-wrap pt-2">
               <button
                 type="button"
-                onClick={() => setFormData({ ...formData, enablePromoBanner: !formData.enablePromoBanner })}
-                className={`relative w-11 h-5.5 rounded-full transition-colors ${
-                  formData.enablePromoBanner ? "bg-[#FFC72C]" : "bg-[#2A211B]"
-                }`}
+                onClick={handleExportFullBackup}
+                className="px-5 py-2.5 rounded-xl bg-[#1A1412] hover:bg-[#2A211B] border border-[#DAA520]/40 text-[#FFC72C] text-xs font-bold flex items-center gap-2"
               >
-                <div
-                  className={`absolute top-0.5 w-4.5 h-4.5 rounded-full bg-white shadow transition-transform ${
-                    formData.enablePromoBanner ? "translate-x-5.5" : "translate-x-0.5"
-                  }`}
+                <Download className="w-4 h-4" /> Unduh Full Backup (JSON)
+              </button>
+
+              <label className="px-5 py-2.5 rounded-xl bg-[#1A1412] hover:bg-[#2A211B] border border-[#DAA520]/40 text-[#FFC72C] text-xs font-bold flex items-center gap-2 cursor-pointer">
+                <Upload className="w-4 h-4" /> Pulihkan dari File JSON
+                <input
+                  type="file"
+                  accept=".json"
+                  onChange={handleImportFullBackup}
+                  className="hidden"
                 />
+              </label>
+
+              <button
+                type="button"
+                onClick={() => {
+                  if (confirm("Reset seluruh pengaturan media, gambar, dan teks ke default bawaan awal?")) {
+                    onResetSettings();
+                    setFormData(DEFAULT_STORE_SETTINGS);
+                  }
+                }}
+                className="px-4 py-2.5 rounded-xl bg-[#1A1412] hover:bg-red-950/40 border border-red-500/30 text-red-400 text-xs font-bold flex items-center gap-2"
+              >
+                <RotateCcw className="w-4 h-4" /> Reset ke Default Awal
               </button>
             </div>
           </div>
+        )}
 
-          <div className="space-y-1">
-            <label className="text-[10px] sm:text-xs font-bold text-[#A39688] uppercase tracking-wider block">
-              Teks Pengumuman Promo:
-            </label>
-            <textarea
-              rows={2}
-              value={formData.promoBannerText}
-              onChange={(e) => setFormData({ ...formData, promoBannerText: e.target.value })}
-              className="w-full px-3 py-2 rounded-xl bg-[#0A0807] border border-[#DAA520]/40 text-white text-xs focus:outline-none focus:border-[#FFC72C]"
-              placeholder="Tulis pesan promo atau info diskon..."
-            />
-          </div>
-        </div>
+      </div>
 
-        {/* Section 3: Konfigurasi Opsi Gilingan Kopi */}
-        <div className="p-4 sm:p-6 rounded-2xl bg-[#120E0C] border border-[#DAA520]/25 space-y-4">
-          <div className="flex items-center gap-2 pb-2 border-b border-[#2A211B]">
-            <Coffee className="w-4 h-4 text-[#FFC72C]" />
-            <h3 className="text-sm sm:text-base font-bold text-white uppercase tracking-wider">
-              Daftar Opsi Gilingan Kopi
-            </h3>
-          </div>
-
-          <p className="text-[11px] text-[#A39688]">
-            Opsi gilingan ini akan muncul saat pelanggan memesan kopi di website utama maupun saat admin mencatat pesanan manual.
-          </p>
-
-          <div className="space-y-2">
-            {formData.availableGrindOptions.map((opt, idx) => (
-              <div key={idx} className="flex items-center justify-between p-2.5 rounded-xl bg-[#0A0807] border border-[#2A211B]">
-                <div className="flex items-center gap-2">
-                  <span className="w-5 h-5 rounded-full bg-[#1A1412] text-[#FFC72C] text-[10px] font-bold flex items-center justify-center">
-                    {idx + 1}
-                  </span>
-                  <span className="text-xs font-semibold text-white">{opt}</span>
-                </div>
-                {formData.availableGrindOptions.length > 1 && (
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveGrind(idx)}
-                    className="p-1.5 rounded-lg text-red-400 hover:bg-red-950/40 transition-colors"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                )}
-              </div>
-            ))}
-          </div>
-
-          {/* Add new grind option */}
-          <div className="flex items-center gap-2 pt-2">
-            <input
-              type="text"
-              placeholder="Tambah opsi gilingan baru (misal: Cold Brew Coarse Grind)"
-              value={newGrindOption}
-              onChange={(e) => setNewGrindOption(e.target.value)}
-              className="flex-1 px-3 py-2 rounded-xl bg-[#0A0807] border border-[#DAA520]/30 text-white text-xs focus:outline-none focus:border-[#FFC72C]"
-            />
-            <button
-              type="button"
-              onClick={handleAddGrind}
-              className="px-4 py-2 rounded-xl bg-[#1A1412] hover:bg-[#FFC72C] text-[#FFC72C] hover:text-[#0A0807] border border-[#DAA520]/40 text-xs font-bold flex items-center gap-1 transition-all"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              Tambah
-            </button>
-          </div>
-        </div>
-
-        {/* Section 4: Backup & Restore Seluruh Website */}
-        <div className="p-4 sm:p-6 rounded-2xl bg-[#120E0C] border border-[#DAA520]/25 space-y-4">
-          <div className="flex items-center gap-2 pb-2 border-b border-[#2A211B]">
-            <Database className="w-4 h-4 text-[#FFC72C]" />
-            <h3 className="text-sm sm:text-base font-bold text-white uppercase tracking-wider">
-              Backup & Pemulihan Seluruh Data
-            </h3>
-          </div>
-
-          <p className="text-[11px] text-[#A39688]">
-            Unduh salinan cadangan lengkap yang mencakup seluruh Produk, Riwayat Pesanan, Pengaturan Toko, dan Kontak WhatsApp dalam 1 file JSON aman.
-          </p>
-
-          <div className="flex items-center gap-3 flex-wrap pt-1">
-            <button
-              type="button"
-              onClick={handleExportFullBackup}
-              className="px-4 py-2.5 rounded-xl bg-[#1A1412] hover:bg-[#2A211B] border border-[#DAA520]/40 text-[#FFC72C] text-xs font-bold flex items-center gap-2 transition-colors"
-            >
-              <Download className="w-4 h-4" />
-              Unduh Full Backup (JSON)
-            </button>
-
-            <label className="px-4 py-2.5 rounded-xl bg-[#1A1412] hover:bg-[#2A211B] border border-[#DAA520]/40 text-[#FFC72C] text-xs font-bold flex items-center gap-2 cursor-pointer transition-colors">
-              <Upload className="w-4 h-4" />
-              Pulihkan dari Backup JSON
-              <input
-                type="file"
-                accept=".json"
-                onChange={handleImportFullBackup}
-                className="hidden"
-              />
-            </label>
-
-            <button
-              type="button"
-              onClick={() => {
-                if (confirm("Reset semua pengaturan master toko ke default?")) {
-                  onResetSettings();
-                  setFormData(JSON.parse(JSON.stringify(settings)));
-                }
-              }}
-              className="px-4 py-2.5 rounded-xl bg-[#1A1412] hover:bg-red-950/40 border border-red-500/30 text-red-400 text-xs font-bold flex items-center gap-2 transition-colors"
-            >
-              <RotateCcw className="w-4 h-4" />
-              Reset Pengaturan
-            </button>
-          </div>
-        </div>
-
-        {/* Submit Save Button */}
-        <div className="flex items-center justify-end gap-3 pt-2">
-          <button
-            type="submit"
-            className="px-6 py-3 rounded-xl bg-gradient-to-r from-[#FFD034] via-[#FFC72C] to-[#E6AF2E] text-[#0A0807] font-black text-xs sm:text-sm flex items-center gap-2 shadow-[0_4px_20px_rgba(255,199,44,0.3)] hover:scale-[1.02] transition-transform"
-          >
-            <Save className="w-4 h-4" />
-            Simpan Semua Pengaturan
-          </button>
-        </div>
-
-      </form>
+      {/* 4. Bottom Sticky Save Bar */}
+      <div className="p-4 rounded-2xl bg-[#14100E] border border-[#DAA520]/30 flex items-center justify-between">
+        <span className="text-xs text-[#A39688]">
+          💡 Perubahan pada gambar dan teks akan langsung diterapkan di website setelah disimpan.
+        </span>
+        <button
+          type="button"
+          onClick={() => handleSave()}
+          className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#FFD034] via-[#FFC72C] to-[#E6AF2E] text-[#0A0807] font-black text-xs sm:text-sm flex items-center gap-2 shadow-[0_0_20px_rgba(255,199,44,0.35)] hover:scale-[1.02] transition-transform shrink-0"
+        >
+          <Save className="w-4 h-4" />
+          Simpan Semua
+        </button>
+      </div>
 
     </div>
   );

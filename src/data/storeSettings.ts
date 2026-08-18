@@ -1,3 +1,47 @@
+export interface HeroSectionSettings {
+  tagline: string;
+  headline1: string;
+  headlineHighlight: string;
+  headline3: string;
+  description: string;
+  bgImage: string;
+}
+
+export interface AboutSectionSettings {
+  badge: string;
+  title: string;
+  titleHighlight: string;
+  image: string;
+  locationTitle: string;
+  locationSubtitle: string;
+  description1: string;
+  description2: string;
+  features: string[];
+}
+
+export interface GalleryPhotoItem {
+  id: string;
+  src: string;
+  title: string;
+  caption: string;
+}
+
+export interface KeunggulanCardItem {
+  id: string;
+  title: string;
+  desc: string;
+}
+
+export interface KeunggulanSectionSettings {
+  badge: string;
+  title: string;
+  titleHighlight: string;
+  image: string;
+  imageQuote: string;
+  cards: KeunggulanCardItem[];
+  checklist: string[];
+}
+
 export interface StoreSettings {
   storeName: string;
   storeStatus: "open" | "busy" | "closed";
@@ -8,6 +52,12 @@ export interface StoreSettings {
   promoBannerText: string;
   availableGrindOptions: string[];
   autoSyncOrders: boolean;
+
+  // Customizable Media & Site Content
+  hero: HeroSectionSettings;
+  about: AboutSectionSettings;
+  gallery: GalleryPhotoItem[];
+  keunggulan: KeunggulanSectionSettings;
 }
 
 export const DEFAULT_STORE_SETTINGS: StoreSettings = {
@@ -25,6 +75,101 @@ export const DEFAULT_STORE_SETTINGS: StoreSettings = {
     "Giling Kasar (French Press / Cold Brew)",
   ],
   autoSyncOrders: true,
+
+  // Default Hero Settings
+  hero: {
+    tagline: "Nikmatnya Kopi Asli Pasaman",
+    headline1: "KOPI NIKMAT,",
+    headlineHighlight: "SEMANGAT",
+    headline3: "BERLIPAT!",
+    description: "Dibuat dari biji kopi robusta pilihan terbaik yang dipetik langsung dari perkebunan di Kabupaten Pasaman dengan aroma kuat, rasa mantap, dan kualitas premium di setiap tegukan.",
+    bgImage: "/images/user_provided_bg.jpg",
+  },
+
+  // Default About Us Settings
+  about: {
+    badge: "TENTANG KAMI",
+    title: "YELLOF COFFEE",
+    titleHighlight: "KOPI ASLI NAGARI",
+    image: "/images/pasaman_plantation.png",
+    locationTitle: "Kabupaten Pasaman, Sumatera Barat",
+    locationSubtitle: "Lahan Perkebunan Kopi Subur Ketinggian 800 - 1.200 MDPL",
+    description1: "Kami berkomitmen menghadirkan kopi robusta berkualitas tinggi langsung dari perkebunan subur di Kabupaten Pasaman untuk Anda yang menghargai cita rasa kopi sesungguhnya.",
+    description2: "Dipetik hanya saat buah kopi berwarna merah sempurna (Petik Merah), diproses secara higienis, dan disangrai secara terukur untuk memunculkan kombinasi aroma khas yang bold, rasa mantap tanpa ampas, dan tingkat keasaman yang aman di lambung.",
+    features: [
+      "100% Biji Robusta Pilihan",
+      "Petik Merah Berkualitas",
+      "Sangrai Terukur & Fresh",
+      "Warisan Cita Rasa Nagari",
+      "Tanpa Esens & Pengawet",
+      "Sudah Teruji Di Gemari Penikmat Kopi",
+    ],
+  },
+
+  // Default Gallery Photos (4 cards)
+  gallery: [
+    {
+      id: "gal-1",
+      src: "/images/grid_1_hot_ceramic.jpg",
+      title: "Cangkir Ceramic Kopi Hitam",
+      caption: "Aroma Mantap & Panas Khas Pasaman",
+    },
+    {
+      id: "gal-2",
+      src: "/images/grid_2_iced_coffee.jpg",
+      title: "Es Kopi Robusta Segar",
+      caption: "Dingin, Segar & Energik Seharian",
+    },
+    {
+      id: "gal-3",
+      src: "/images/grid_3_pouch_package.jpg",
+      title: "Kemasan Pouch Zipper 100% Murni",
+      caption: "Kedap Air & Udara (Fresh Roasted)",
+    },
+    {
+      id: "gal-4",
+      src: "/images/grid_4_hot_glass.jpg",
+      title: "Glass Cup Hot Espresso Bold",
+      caption: "Specialty Robusta High Altitude Pasaman",
+    },
+  ],
+
+  // Default Keunggulan Settings
+  keunggulan: {
+    badge: "MENGAPA MEMILIH YELLOF COFFEE",
+    title: "KEUNGGULAN KOPI",
+    titleHighlight: "ROBUSTA PASAMAN",
+    image: "/images/coffee_cherries.png",
+    imageQuote: '"Hanya Buah Kopi Merah Pilihan Yang Diolah"',
+    cards: [
+      {
+        id: "k-1",
+        title: "Aroma Kuat & Khas Nagari",
+        desc: "Menghadirkan wangi aroma khas kopi robusta asli pegunungan Pasaman yang menyerbak seketika diseduh.",
+      },
+      {
+        id: "k-2",
+        title: "Rasa Lebih Bold & Mantap",
+        desc: "Tekstur kental dengan karakter bitter-sweet alami tanpa rasa asam menusuk di lidah.",
+      },
+      {
+        id: "k-3",
+        title: "Kandungan Kafein Alami Tinggi",
+        desc: "Memberikan suntikan energi dan fokus ekstra untuk mendampingi produktivitas aktivitas Anda seharian.",
+      },
+      {
+        id: "k-4",
+        title: "Cocok Untuk Teman Aktivitas",
+        desc: "Dapat dinikmati hitam murni, tubruk tradisional, maupun dicampur susu dan gula aren favorit Anda.",
+      },
+    ],
+    checklist: [
+      "Aroma kuat dan khas",
+      "Rasa lebih bold & mantap",
+      "Kafein alami tinggi",
+      "Tanpa bahan kimia/esens",
+    ],
+  },
 };
 
 const STORE_SETTINGS_KEY = "yellof_store_settings";
@@ -34,9 +179,25 @@ export function getStoredStoreSettings(): StoreSettings {
   try {
     const stored = localStorage.getItem(STORE_SETTINGS_KEY);
     if (stored) {
-      const parsed = JSON.parse(stored) as StoreSettings;
-      if (parsed && Array.isArray(parsed.availableGrindOptions)) {
-        return { ...DEFAULT_STORE_SETTINGS, ...parsed };
+      const parsed = JSON.parse(stored) as Partial<StoreSettings>;
+      if (parsed && typeof parsed === "object") {
+        return {
+          ...DEFAULT_STORE_SETTINGS,
+          ...parsed,
+          hero: { ...DEFAULT_STORE_SETTINGS.hero, ...(parsed.hero || {}) },
+          about: {
+            ...DEFAULT_STORE_SETTINGS.about,
+            ...(parsed.about || {}),
+            features: parsed.about?.features || DEFAULT_STORE_SETTINGS.about.features,
+          },
+          gallery: Array.isArray(parsed.gallery) && parsed.gallery.length > 0 ? parsed.gallery : DEFAULT_STORE_SETTINGS.gallery,
+          keunggulan: {
+            ...DEFAULT_STORE_SETTINGS.keunggulan,
+            ...(parsed.keunggulan || {}),
+            cards: parsed.keunggulan?.cards || DEFAULT_STORE_SETTINGS.keunggulan.cards,
+            checklist: parsed.keunggulan?.checklist || DEFAULT_STORE_SETTINGS.keunggulan.checklist,
+          },
+        };
       }
     }
   } catch {

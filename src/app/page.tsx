@@ -48,20 +48,25 @@ export default function Home() {
       />
 
       {/* HALAMAN 1: Hero Banner Widescreen Persis Gambar Referensi */}
-      <Hero onOpenOrderModal={() => handleOpenOrderModal()} />
+      <Hero
+        onOpenOrderModal={() => handleOpenOrderModal()}
+        hero={settings.hero}
+      />
 
       {/* ROW 2: Overview Grid 3 Kolom Persis Gambar Referensi (Tentang Kami, Produk Kami, Keunggulan & WA QR) */}
       <MainOverviewGrid
         onOpenOrderModal={handleOpenOrderModal}
         onOpenDeliveryModal={handleOpenDeliveryModal}
         contact={contact}
+        about={settings.about}
+        keunggulan={settings.keunggulan}
       />
 
       {/* HALAMAN KE-2 DETAIL: Katalog Lengkap, Keunggulan Detail, Testimoni & Footer */}
       <div className="relative z-10">
         
         {/* Detail Story Section */}
-        <AboutSection />
+        <AboutSection about={settings.about} />
 
         {/* Full Interactive Product Catalog Varian (100g, 250g Best Seller, 500g, 1kg) */}
         <ProductCatalog
@@ -69,10 +74,11 @@ export default function Home() {
           onOpenDeliveryModal={handleOpenDeliveryModal}
           products={products}
           contact={contact}
+          gallery={settings.gallery}
         />
 
         {/* Keunggulan Detail Section */}
-        <KeunggulanSection />
+        <KeunggulanSection keunggulan={settings.keunggulan} />
 
         {/* Testimoni Pelanggan */}
         <Testimonials />

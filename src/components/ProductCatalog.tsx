@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import { ProductVariant, DEFAULT_YELLOF_PRODUCTS, YellofContact, DEFAULT_YELLOF_CONTACT } from "@/data/products";
+import { GalleryPhotoItem, DEFAULT_STORE_SETTINGS } from "@/data/storeSettings";
 import { ShoppingBag, Truck, Sparkles, Check, Plus, Minus, Star, Coffee, ShieldCheck, PackageCheck } from "lucide-react";
 
 interface ProductCatalogProps {
@@ -10,6 +11,7 @@ interface ProductCatalogProps {
   onOpenDeliveryModal: () => void;
   products?: ProductVariant[];
   contact?: YellofContact;
+  gallery?: GalleryPhotoItem[];
 }
 
 export const ProductCatalog: React.FC<ProductCatalogProps> = ({
@@ -17,9 +19,11 @@ export const ProductCatalog: React.FC<ProductCatalogProps> = ({
   onOpenDeliveryModal,
   products,
   contact,
+  gallery,
 }) => {
   const productData = products || DEFAULT_YELLOF_PRODUCTS;
   const contactData = contact || DEFAULT_YELLOF_CONTACT;
+  const galleryData = gallery || DEFAULT_STORE_SETTINGS.gallery;
   const [selectedProductId, setSelectedProductId] = useState<string>("yellof-250g");
   const [quantity, setQuantity] = useState<number>(1);
   const [grindPreference, setGrindPreference] = useState<string>("Halus");
@@ -253,36 +257,41 @@ export const ProductCatalog: React.FC<ProductCatalogProps> = ({
 
             {/* Photo Grid */}
             <div className="grid grid-cols-12 gap-2 sm:gap-2.5 md:gap-4">
-              {galleryPhotos.map((photo, idx) => (
-                <div
-                  key={idx}
-                  className={`${photo.colSpan} relative rounded-xl sm:rounded-2xl overflow-hidden group border border-[#FFC72C]/30 bg-[#0A0807] shadow-xl hover:border-[#FFC72C] transition-all duration-500`}
-                >
-                  <div className={`relative w-full ${photo.aspect}`}>
-                    <Image
-                      src={photo.src}
-                      alt={photo.title}
-                      fill
-                      className="object-cover group-hover:scale-105 transition-transform duration-700"
-                    />
-                    
-                    {/* Gradient Overlay & Caption */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#0A0807] via-transparent to-transparent opacity-80 group-hover:opacity-90 transition-opacity" />
-                    
-                    <div className="absolute bottom-2 sm:bottom-3 left-2 sm:left-3 right-2 sm:right-3 text-left">
-                      <span className="text-[8px] sm:text-[10px] font-extrabold uppercase text-[#FFC72C] tracking-wider block">
-                        Yellof Coffee Pasaman
-                      </span>
-                      <h4 className="font-serif text-xs sm:text-sm md:text-base font-bold text-white leading-snug">
-                        {photo.title}
-                      </h4>
-                      <p className="text-[9px] sm:text-[11px] text-[#D1C7BD] font-light hidden sm:block">
-                        {photo.caption}
-                      </p>
+              {galleryData.map((photo, idx) => {
+                const colSpan = idx % 3 === 0 ? "col-span-12" : "col-span-6";
+                const aspect = idx % 3 === 0 ? "aspect-[16/9]" : "aspect-square";
+
+                return (
+                  <div
+                    key={photo.id || idx}
+                    className={`${colSpan} relative rounded-xl sm:rounded-2xl overflow-hidden group border border-[#FFC72C]/30 bg-[#0A0807] shadow-xl hover:border-[#FFC72C] transition-all duration-500`}
+                  >
+                    <div className={`relative w-full ${aspect}`}>
+                      <Image
+                        src={photo.src || "/images/grid_1_hot_ceramic.jpg"}
+                        alt={photo.title}
+                        fill
+                        className="object-cover group-hover:scale-105 transition-transform duration-700"
+                      />
+                      
+                      {/* Gradient Overlay & Caption */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#0A0807] via-transparent to-transparent opacity-80 group-hover:opacity-90 transition-opacity" />
+                      
+                      <div className="absolute bottom-2 sm:bottom-3 left-2 sm:left-3 right-2 sm:right-3 text-left">
+                        <span className="text-[8px] sm:text-[10px] font-extrabold uppercase text-[#FFC72C] tracking-wider block">
+                          Yellof Coffee Pasaman
+                        </span>
+                        <h4 className="font-serif text-xs sm:text-sm md:text-base font-bold text-white leading-snug">
+                          {photo.title}
+                        </h4>
+                        <p className="text-[9px] sm:text-[11px] text-[#D1C7BD] font-light hidden sm:block">
+                          {photo.caption}
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 

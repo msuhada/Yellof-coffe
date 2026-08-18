@@ -2,20 +2,24 @@
 
 import React from "react";
 import Image from "next/image";
+import { HeroSectionSettings, DEFAULT_STORE_SETTINGS } from "@/data/storeSettings";
 import { ShoppingCart, MessageCircle, Sun, Users, Coffee, ShieldCheck } from "lucide-react";
 
 interface HeroProps {
   onOpenOrderModal: () => void;
+  hero?: HeroSectionSettings;
 }
 
-export const Hero: React.FC<HeroProps> = ({ onOpenOrderModal }) => {
+export const Hero: React.FC<HeroProps> = ({ onOpenOrderModal, hero }) => {
+  const data = hero || DEFAULT_STORE_SETTINGS.hero;
+
   return (
     <section id="beranda" className="relative min-h-[100svh] pt-16 sm:pt-20 md:pt-24 pb-8 sm:pb-12 flex flex-col justify-between overflow-hidden bg-[#0A0807]">
       
       {/* Background Image: Directly using the exact image provided by the user */}
       <div className="absolute inset-0 z-0">
         <Image
-          src="/images/user_provided_bg.jpg"
+          src={data.bgImage || "/images/user_provided_bg.jpg"}
           alt="Yellof Coffee Commercial Advertising Background"
           fill
           className="object-cover object-center opacity-95"
@@ -37,27 +41,23 @@ export const Hero: React.FC<HeroProps> = ({ onOpenOrderModal }) => {
             
             {/* Tagline Cursive Script */}
             <div className="font-serif italic text-lg sm:text-xl md:text-3xl text-[#FFDF6D] tracking-wide font-normal drop-shadow-md">
-              Nikmatnya Kopi Asli Pasaman
+              {data.tagline}
             </div>
 
             {/* Main Headline */}
             <h1 className="font-serif text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-black text-white leading-[1.05] tracking-tight uppercase drop-shadow-2xl">
-              KOPI NIKMAT, <br />
+              {data.headline1} <br />
               <span className="text-[#FFC72C] italic font-serif font-extrabold tracking-normal">
-                SEMANGAT
+                {data.headlineHighlight}
               </span> <br />
               <span className="text-[#FFC72C] font-black">
-                BERLIPAT!
+                {data.headline3}
               </span>
             </h1>
 
             {/* Description */}
             <p className="text-xs sm:text-sm md:text-base text-[#E2D9D0] max-w-xl leading-relaxed drop-shadow font-light">
-              Dibuat dari biji kopi robusta pilihan terbaik yang dipetik langsung dari perkebunan di{" "}
-              <strong className="text-[#FFC72C] font-bold underline decoration-[#FFC72C]/50">
-                Kabupaten Pasaman
-              </strong>{" "}
-              dengan aroma kuat, rasa mantap, dan kualitas premium di setiap tegukan.
+              {data.description}
             </p>
 
             {/* CTA Buttons */}
